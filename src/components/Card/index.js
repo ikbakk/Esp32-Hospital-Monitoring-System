@@ -79,10 +79,13 @@ const Card = ({nama, sensorId, ruang, beat, spo2, temp, timestamp, nilai}) => {
     } else if ( _.isEqual( object, danger ) ){
       result = 'alert-bar danger'
       message = `Periksa oksimeter dan sensor suhu ${_.upperCase(nama)} di RUANG ${_.upperCase(sensorId)}`
-    } else if ( _.isEqual( object, warnOxy || _.isEqual( object, warnBeat ) ) ){
+    } else if ( _.isEqual( object, warnOxy )) {
       result = 'alert-bar warning1'
       message = `Periksa oksimeter ${_.upperCase(nama)} di RUANG ${_.upperCase(sensorId)}`
-    } else if ( _.isEqual( object, warnTemp ) ){
+    } else if ( _.isEqual( object, warnBeat )) {
+      result = 'alert-bar warning1'
+      message = `Periksa oksimeter ${_.upperCase(nama)} di RUANG ${_.upperCase(sensorId)}`
+      }else if ( _.isEqual( object, warnTemp ) ){
       result = 'alert-bar warning2' 
       message = `Periksa sensor suhu ${_.upperCase(nama)} di RUANG ${_.upperCase(sensorId)}`
     } else {

@@ -1,0 +1,12 @@
+.add {
+    --_viewport-margin: 2.5vmin;
+    position: fixed;
+    z-index: var(--layer-1);
+
+    inset-block: auto var(--_viewport-margin);
+    inset-inline: auto var(--_viewport-margin);
+}
+
+input {
+  background-color: #5C3D2E;
+}

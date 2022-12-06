@@ -1,0 +1,107 @@
+.sub-header-container-container {
+  display: flex;
+  justify-content: center;
+  align-content: center;
+  position: relative;
+  top: 1.8em;
+}
+
+.sub-header-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #5C3D2E;
+  width: 40%;
+  height: 50px;
+  box-shadow: 0 5px 5px -5px rgba(75, 75, 75, 0.2);
+  border-style: solid;
+  border-radius: 10px;
+  border-color: black;
+  color: #E0C097;
+}
+
+.sub-header-container p {
+  font-size: 20px;
+}
+
+.sub-header-container .time-label {
+  position:relative;
+  align-self: center;
+  cursor: default;
+  display: flex;
+  align-items: center;
+  left: 3em;
+}
+
+.sub-header-container .time-label .button {
+  width: 32px;
+  height: 32px;
+  display: block;
+  padding: 3px;
+  margin-left: 10px;
+}
+
+.hospital-bed-container {
+  width: 100%;
+  padding: 44px 32px;
+  display: flex;
+  justify-content: space-evenly;
+}
+
+.hospital-bed-container .hb-monitoring-container {
+  width: 80%;
+}
+
+.hospital-bed-container .hb-report-container .report-container {
+  margin-top: 6px;
+  transition: box-shadow 0.3s;
+}
+
+.hospital-bed-container .hb-report-container .report-container:hover {
+  box-shadow: 0 0 20px #2D2424;
+}
+
+.hospital-bed-container .hb-monitoring-container .info-chart-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+}
+
+.hospital-bed-container .hb-monitoring-container .info-chart-container .card-container {
+  margin: 6px 10px;
+  background: #5C3D2E;
+  border-radius: 8px;
+  border-style: solid;
+  border-color: black;
+  overflow: hidden;
+  cursor: default;
+  box-shadow: 0 0 20px rgba(30, 30, 30, 0.2);
+  transition: box-shadow 0.3s;
+  padding: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #E0C097;
+}
+
+.hospital-bed-container .hb-monitoring-container .info-chart-container .card-container:hover {
+  box-shadow: 0 0 20px #2D2424;
+}
+
+.hospital-bed-container .hb-monitoring-container .info-chart-container .card-container.card-info-container {
+  padding: 38px;
+  max-width: 250px;
+  height: 250px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.hospital-bed-container .hb-monitoring-container .info-chart-container .card-container.card-info-container h2 {
+  font-size: 26px;
+}
+
+.hospital-bed-container .hb-monitoring-container .info-chart-container .card-container.card-chart-container {
+  padding: 5px;
+  height: 250px;
+}

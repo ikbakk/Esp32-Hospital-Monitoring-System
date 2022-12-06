@@ -1,0 +1,29 @@
+.report-container {
+  position: relative;
+  width: 320px;
+  padding: 10px;
+  margin: 10px;
+  background: #5C3D2E;
+  border-radius: 8px;
+  color: #E0C097;
+  border: solid;
+  border-color: black;
+  box-shadow: 0 0 20px #1e1e1e4d;
+  text-align: center;
+}
+
+.table-container {
+  border-radius: 8px;
+  margin: 5px;
+  background: #0000004f;
+  cursor: default;
+}
+
+.table-container td {
+  width: 70px;
+}
+
+.sensor-data-col {
+  text-align: center;
+  font-size: 0.893em;
+}

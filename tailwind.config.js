@@ -11,6 +11,14 @@ module.exports = {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
         'gradient-conic':
           'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))'
+      },
+      colors: {
+        hijauGelap: '#285430',
+        hijauTerang: '#5F8D4E',
+        merah: '#FF706F',
+        kuning: '#FED597',
+        title: '#181C32',
+        abu: '#C9C9C9'
       }
     }
   },

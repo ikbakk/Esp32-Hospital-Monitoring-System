@@ -10,4 +10,48 @@
   p {
     @apply text-title/80;
   }
+
+  .card-container {
+    @apply h-72 w-52 rounded-xl outline-dashed outline-2 outline-title [perspective:1100px];
+  }
+
+  .card-face-body {
+    @apply relative h-full w-full rounded-xl outline outline-title duration-500 [transform-style:preserve-3d] hover:cursor-pointer hover:shadow-lg hover:shadow-black;
+  }
+
+  .card-face {
+    @apply absolute h-full w-full rounded-xl [backface-visibility:hidden];
+  }
+
+  .card-face-front {
+    @apply [transform:rotateY(0deg)];
+  }
+
+  .card-face-back {
+    @apply [transform:rotateY(180deg)];
+  }
+
+  #card-header {
+    @apply flex h-1/6 w-full flex-row items-center justify-between rounded-t-xl border-b-4 px-3;
+  }
+
+  #card-content-body {
+    @apply h-4/6 w-full;
+  }
+
+  #card-footer {
+    @apply flex h-1/6 w-full flex-col items-center;
+  }
+
+  .card-button {
+    @apply duration-75 hover:cursor-pointer hover:rounded hover:bg-[#00000033];
+  }
+
+  .card-empty-container {
+    @apply card bg-secondary font-hanken text-accent outline-secondary-focus m-5 flex h-72 w-52 items-center justify-center space-y-5 p-5 shadow-xl outline;
+  }
+
+  .card-empty-add {
+    @apply bg-primary hover:bg-primary-focus flex h-3/4 w-3/4 flex-col items-center justify-center rounded-xl hover:cursor-pointer;
+  }
 }

@@ -1,5 +1,34 @@
-import Image from 'next/image';
+'use client';
+
+import { User } from '@/type';
+import { mainPathRef } from '@/utils/firebase';
+import { useDatabaseValue } from '@react-query-firebase/database';
+
+import RoomCard from '@/components/RoomCard/RoomCard';
 
 export default function Home() {
-  return <main className=''></main>;
+  const { data, isLoading } = useDatabaseValue<User[]>(['userId'], mainPathRef);
+
+  return (
+    <>
+      {isLoading ? (
+        <div className='flex h-screen items-center justify-center'>
+          <p>Loading...</p>
+        </div>
+      ) : (
+        <div className='w-full py-4'>
+          <div className='flex h-full flex-row flex-wrap justify-evenly'>
+            {data?.map((datum, index) => (
+              <RoomCard
+                key={datum.nama}
+                id={index}
+                dataUser={datum}
+                isLoading={isLoading}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+    </>
+  );
 }

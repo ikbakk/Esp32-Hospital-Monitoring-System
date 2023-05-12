@@ -44,7 +44,7 @@ const ReportTable: FC<ReportTableProps> = ({
       <div className='flex w-full flex-col rounded-xl p-2'>
         <div className='flex w-full justify-center'>
           <DownloadButton
-            name='Export to CSV File'
+            name={name}
             title='Export to CSV File'
             nilai={nilai}
             roomNumber={sensorId + 1}
@@ -69,25 +69,28 @@ const ReportTable: FC<ReportTableProps> = ({
                 <p>(°C)</p>
               </th>
             </tr>
-            {nilai.slice(Math.max(5, 0)).map((nilai, index) => (
-              <tr
-                key={index}
-                className='flex justify-evenly rounded-lg text-title odd:bg-title/20 '>
-                <td className='flex w-full flex-col items-center justify-center'>
-                  <p>{timeFormatter(nilai.timestamp, true)}</p>
-                  <p>{dateFormatter(nilai.timestamp, true)}</p>
-                </td>
-                <td className='flex w-full items-center justify-center'>
-                  {nilai.beat}
-                </td>
-                <td className='flex w-full items-center justify-center'>
-                  {nilai.spo2}
-                </td>
-                <td className='flex w-full items-center justify-center'>
-                  {nilai.temp}
-                </td>
-              </tr>
-            ))}
+            {nilai
+              .slice(1)
+              .reverse()
+              .map((nilai, index) => (
+                <tr
+                  key={index}
+                  className='flex justify-evenly rounded-lg px-2 text-title odd:bg-title/20 '>
+                  <td className='flex w-full flex-col items-center justify-center'>
+                    <p>{dateFormatter(nilai.timestamp, true)}</p>
+                    <p>{timeFormatter(nilai.timestamp, true)}</p>
+                  </td>
+                  <td className='flex w-full items-center justify-center'>
+                    {nilai.beat}
+                  </td>
+                  <td className='flex w-full items-center justify-center'>
+                    {nilai.spo2}
+                  </td>
+                  <td className='flex w-full items-center justify-center'>
+                    {nilai.temp}
+                  </td>
+                </tr>
+              ))}
           </tbody>
         </table>
       </div>

@@ -16,3 +16,6 @@ export const firebaseApp = initializeApp(firebaseConfig);
 
 const db = getDatabase(firebaseApp);
 export const mainPathRef = ref(db, 'userId/');
+export const dynamicPathRef = (id: any) => {
+  return ref(db, `userId/${id}`);
+};

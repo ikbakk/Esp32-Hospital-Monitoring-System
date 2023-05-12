@@ -24,16 +24,18 @@ const Header = () => {
   const path = usePathname();
 
   return (
-    <header className='w-full bg-title px-3 py-2 text-white'>
+    <header className='fixed z-40 w-full bg-title px-3 py-2 text-white'>
       <section className='flex items-center gap-10'>
         <TbHeartRateMonitor size={32} />
         <nav>
           <ul className='flex items-center'>
-            {nav.map((n) => (
+            {nav.map(n => (
               <Link
                 href={n.link}
                 className={`${
-                  n.link === path ? 'font-bold tracking-wide text-white' : 'text-white/80'
+                  n.link === path
+                    ? 'font-bold tracking-wide text-white'
+                    : 'text-white/80'
                 } rounded-md px-3 py-1 duration-150 hover:cursor-pointer hover:bg-white/20`}
                 key={n.title}>
                 {n.title}

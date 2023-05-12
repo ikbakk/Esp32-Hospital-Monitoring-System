@@ -16,11 +16,11 @@ export default function Home() {
           <p>Loading...</p>
         </div>
       ) : (
-        <div className='w-full py-4'>
+        <div className='w-full py-16'>
           <div className='flex h-full flex-row flex-wrap justify-evenly'>
             {data?.map((datum, index) => (
               <RoomCard
-                key={datum.nama}
+                key={index}
                 id={index}
                 dataUser={datum}
                 isLoading={isLoading}

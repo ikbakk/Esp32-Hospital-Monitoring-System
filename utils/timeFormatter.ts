@@ -1,16 +1,15 @@
-const timeFormatter = (timestamp: number, useSeconds = true) => {
-  if (isNaN(timestamp)) {
-    return timestamp;
-  }
-
+const timeFormatter = (timestamp: number, withSeconds: boolean) => {
   const date = new Date(timestamp);
-  const hour = '0' + date.getHours();
-  const min = '0' + date.getMinutes();
-  const sec = '0' + date.getSeconds();
 
-  return useSeconds
-    ? hour.substr(-2) + ':' + min.substr(-2) + ':' + sec.substr(-2)
-    : hour.substr(-2) + ':' + min.substr(-2);
+  const formatting = (time: number) => {
+    return time >= 0 && time <= 9 ? '0' + time : time.toString();
+  };
+
+  const hour = formatting(date.getHours());
+  const min = formatting(date.getMinutes());
+  const sec = formatting(date.getSeconds());
+
+  return withSeconds ? hour + ':' + min + ':' + sec : hour + ':' + min;
 };
 
 export default timeFormatter;

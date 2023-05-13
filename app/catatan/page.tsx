@@ -6,7 +6,11 @@ import { User } from '../../type';
 import ReportTable from '@/components/ReportTable';
 
 const Catatan = () => {
-  const { data, isLoading } = useDatabaseValue<User[]>(['userId'], mainPathRef);
+  const { data, isLoading } = useDatabaseValue<User[]>(
+    ['userId'],
+    mainPathRef,
+    { subscribe: true }
+  );
 
   return (
     <>

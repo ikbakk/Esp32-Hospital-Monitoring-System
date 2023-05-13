@@ -10,12 +10,17 @@ import DetailHeader from '@/components/Detail/DetailHeader';
 import DetailReading from '@/components/Detail/DetailReading';
 import { FaHeartbeat, FaLungs, FaTemperatureHigh } from 'react-icons/fa';
 import ReportTable from '@/components/ReportTable';
+import { subscribe } from 'diagnostics_channel';
 
 const DetailPage = () => {
   const slug = Number(useParams().slug);
   const dbRef = dynamicPathRef(slug);
 
-  const { data, isLoading } = useDatabaseValue<User>([`userId/${slug}`], dbRef);
+  const { data, isLoading } = useDatabaseValue<User>(
+    [`userId/${slug}`],
+    dbRef,
+    { subscribe: true }
+  );
 
   const nilai = Object.values(data?.nilai ?? []);
   const beat = data?.nilai ? nilai.map(n => n.beat) : [0];

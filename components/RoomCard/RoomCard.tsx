@@ -13,8 +13,6 @@ interface CardContext {
   setType: React.Dispatch<
     React.SetStateAction<'edit' | 'add' | 'delete' | null>
   >;
-  newName: string;
-  setNewName: React.Dispatch<React.SetStateAction<string>>;
   dialogTitle: string;
   setDialogTitle: React.Dispatch<React.SetStateAction<string>>;
   id: number;
@@ -31,9 +29,7 @@ export const CardContext = createContext<CardContext>({} as CardContext);
 const RoomCard: FC<Props> = ({ isLoading, dataUser, id }) => {
   const router = useRouter();
   const [isFlipped, setIsFlipped] = useState(false);
-  const [isEdit, setIsEdit] = useState(false);
   const [type, setType] = useState<'edit' | 'add' | 'delete' | null>(null);
-  const [newName, setNewName] = useState('');
   const [dialogTitle, setDialogTitle] = useState('');
 
   const { nama, nilai } = dataUser;
@@ -67,8 +63,7 @@ const RoomCard: FC<Props> = ({ isLoading, dataUser, id }) => {
     type,
     setType,
     id,
-    newName,
-    setNewName,
+
     dialogTitle,
     setDialogTitle
   };

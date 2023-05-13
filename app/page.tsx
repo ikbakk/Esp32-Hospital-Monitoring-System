@@ -7,7 +7,11 @@ import { useDatabaseValue } from '@react-query-firebase/database';
 import RoomCard from '@/components/RoomCard/RoomCard';
 
 export default function Home() {
-  const { data, isLoading } = useDatabaseValue<User[]>(['userId'], mainPathRef);
+  const { data, isLoading } = useDatabaseValue<User[]>(
+    ['userId'],
+    mainPathRef,
+    { subscribe: true }
+  );
 
   return (
     <>

@@ -4,16 +4,25 @@ import { Dialog, Transition } from '@headlessui/react';
 import { CardContext } from './RoomCard/RoomCard';
 import EditForm from './EditForm';
 import DeleteConfirm from './DeleteConfirm';
-import AddForm from './AddForm';
+import { useDatabaseUpdateMutation } from '@react-query-firebase/database';
+import { dynamicPathRef } from '../utils/firebase';
 
 interface Props {
   dialogTitle: string;
 }
 
 const Modal: FC<Props> = ({ dialogTitle }) => {
-  const { type, setType, id, setNewName } = useContext(CardContext);
+  const { type, setType, id } = useContext(CardContext);
   const [input, setInput] = useState('');
   const [isOpen, setIsOpen] = useState(false);
+
+  const mutation = useDatabaseUpdateMutation(dynamicPathRef(id));
+
+  const editNode = () => {
+    mutation.mutate({
+      nama: input
+    });
+  };
 
   const closeModal = () => {
     setType(null);
@@ -33,8 +42,9 @@ const Modal: FC<Props> = ({ dialogTitle }) => {
 
   const handleOnSubmit = (e: any) => {
     e.preventDefault();
-    setNewName(input);
+    editNode();
     closeModal();
+    setInput('');
   };
 
   return (

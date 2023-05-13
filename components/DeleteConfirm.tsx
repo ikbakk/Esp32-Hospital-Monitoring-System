@@ -29,12 +29,12 @@ const DeleteConfirm: FC<DeleteConfirmProps> = ({ id }) => {
       <div className='flex w-full justify-around py-3'>
         <button
           onClick={handleConfirm}
-          className='inline-flex items-center justify-center rounded-lg bg-hijauTerang px-4 py-2 text-sm font-medium text-white duration-150 hover:bg-hijauTerang/70 active:scale-95 '>
+          className='inline-flex items-center justify-center rounded-lg bg-hijauTerang px-4 py-2 text-sm font-medium text-white outline outline-1 outline-title duration-150 hover:bg-hijauTerang/70 active:scale-95 '>
           Confirm
         </button>
         <button
           onClick={handleCancel}
-          className='inline-flex items-center justify-center rounded-lg bg-merah px-4 py-2 text-sm font-medium text-white duration-150 hover:bg-merah/70 active:scale-95 '>
+          className='inline-flex items-center justify-center rounded-lg bg-merah px-4 py-2 text-sm font-medium text-white outline outline-1 outline-title duration-150 hover:bg-merah/70 active:scale-95 '>
           Cancel
         </button>
       </div>

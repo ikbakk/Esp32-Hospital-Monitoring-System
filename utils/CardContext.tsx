@@ -1,3 +1,5 @@
+'use client';
+
 import {
   createContext,
   Dispatch,
@@ -7,18 +9,18 @@ import {
 } from 'react';
 
 interface ContextType {
-  isFlipped: boolean;
-  setIsFlipped: Dispatch<SetStateAction<boolean>>;
+  isOpen: boolean;
+  setIsOpen?: Dispatch<SetStateAction<boolean>>;
 }
 
 export const CardContext = createContext<ContextType>({} as ContextType);
 
 export const CardContextProvider = ({ children }: { children: ReactNode }) => {
-  const [isFlipped, setIsFlipped] = useState(false);
+  const [isOpen, setIsOpen] = useState<boolean>(false);
 
   const contextValue = {
-    isFlipped,
-    setIsFlipped
+    isOpen,
+    setIsOpen
   };
 
   return (

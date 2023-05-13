@@ -1,7 +1,7 @@
 'use client';
 
 import _ from 'lodash';
-import { FC, SetStateAction } from 'react';
+import { FC, SetStateAction, useContext } from 'react';
 
 import CardHeader from './CardHeader';
 import CardFooter from './CardFooter';
@@ -30,7 +30,7 @@ const FrontSide: FC<Props> = ({
   setIsFlipped,
   handleClick
 }) => {
-  const danger = { a: false, b: false, c: false };
+   const danger = { a: false, b: false, c: false };
   const warnBeat = { a: false, b: true, c: true };
   const warnOxy = { a: true, b: false, c: true };
   const warnTemp = { a: true, b: true, c: false };

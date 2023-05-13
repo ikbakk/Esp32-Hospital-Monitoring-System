@@ -1,5 +1,6 @@
 import { FC } from 'react';
 import timeFormatter from '@/utils/timeFormatter';
+import dateFormatter from '@/utils/dateFormatter';
 
 interface Props {
   start: number;
@@ -14,9 +15,12 @@ const TimeIntervalLabel: FC<Props> = ({ start, end, className }) => {
 
   return (
     <div className={className}>
-      <span>
-        {timeFormatter(start, false)} - {timeFormatter(end, false)}
-      </span>
+      <div className='flex items-center text-xs'>
+        <p>
+          ({dateFormatter(start, false)}) {timeFormatter(start, false)} - (
+          {dateFormatter(end, false)}) {timeFormatter(end, false)}
+        </p>
+      </div>
     </div>
   );
 };

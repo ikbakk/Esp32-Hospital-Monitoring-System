@@ -44,7 +44,7 @@
   }
 
   .card-button {
-    @apply duration-75 hover:cursor-pointer hover:rounded hover:bg-[#00000033];
+    @apply duration-150 hover:cursor-pointer hover:rounded hover:bg-[#00000033] active:scale-95;
   }
 
   .card-empty-container {

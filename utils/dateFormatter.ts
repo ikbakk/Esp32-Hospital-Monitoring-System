@@ -3,7 +3,7 @@ const dateFormatter = (timestamp: number, withDaysName: boolean) => {
   const day = date.getDay();
   const dd = date.getDate();
   const mm = date.getMonth();
-  const yyyy = date.getFullYear();
+  const yyyy = date.getFullYear().toString().slice(2);
 
   const dayFormat = (day: number) => {
     const days = [

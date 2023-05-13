@@ -2,10 +2,23 @@
 
 import { useRouter } from 'next/navigation';
 import { User } from '@/type';
-import { FC, useState } from 'react';
+import { FC, useState, createContext } from 'react';
 
 import BackSide from './BackSide';
 import FrontSide from './FrontSide';
+import Modal from '../Modal';
+
+interface CardContext {
+  type: 'edit' | 'add' | 'delete' | null;
+  setType: React.Dispatch<
+    React.SetStateAction<'edit' | 'add' | 'delete' | null>
+  >;
+  newName: string;
+  setNewName: React.Dispatch<React.SetStateAction<string>>;
+  dialogTitle: string;
+  setDialogTitle: React.Dispatch<React.SetStateAction<string>>;
+  id: number;
+}
 
 interface Props {
   dataUser: User;
@@ -13,9 +26,16 @@ interface Props {
   id: number;
 }
 
+export const CardContext = createContext<CardContext>({} as CardContext);
+
 const RoomCard: FC<Props> = ({ isLoading, dataUser, id }) => {
   const router = useRouter();
   const [isFlipped, setIsFlipped] = useState(false);
+  const [isEdit, setIsEdit] = useState(false);
+  const [type, setType] = useState<'edit' | 'add' | 'delete' | null>(null);
+  const [newName, setNewName] = useState('');
+  const [dialogTitle, setDialogTitle] = useState('');
+
   const { nama, nilai } = dataUser;
 
   const beat = Object.values(nilai).map(n => n.beat);
@@ -43,8 +63,18 @@ const RoomCard: FC<Props> = ({ isLoading, dataUser, id }) => {
     handleClick
   };
 
+  const contextValue = {
+    type,
+    setType,
+    id,
+    newName,
+    setNewName,
+    dialogTitle,
+    setDialogTitle
+  };
+
   return (
-    <>
+    <CardContext.Provider value={contextValue}>
       <div className='card-container mx-2 my-2'>
         <div className={`${flip} card-face-body`}>
           {isLoading ? (
@@ -57,7 +87,8 @@ const RoomCard: FC<Props> = ({ isLoading, dataUser, id }) => {
           )}
         </div>
       </div>
-    </>
+      <Modal dialogTitle={dialogTitle} />
+    </CardContext.Provider>
   );
 };
 

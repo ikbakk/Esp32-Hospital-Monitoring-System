@@ -1,4 +1,4 @@
-# ESP32 Hospital monitoring system
+# ESP32 Hospital rooms monitoring system
 
 As a project for my college degree, a react app modifying
 [Hospital monitoing dashboard by DamascenoRafael](https://github.com/DamascenoRafael/hospital-monitor-dashboard) by changing it from MQTT protocols into using Firebase Realtime Database combined with Espressif ESP32 to get Heartrate, Spo2, and Temperature. Also migrate using Next.js
@@ -7,35 +7,33 @@ As a project for my college degree, a react app modifying
 
 - CRUD
 - Realtime monitor
-- Downloadable readings history with timestamp (.csv)
+- Downloadable readings history with timestamp (.xlsx)
 - Color coded notification in card header
-- Almost the same as [Hospital monitoing dashboard by DamascenoRafael](https://github.com/DamascenoRafael/hospital-monitor-dashboard)
 
 ## Color Reference for Card's Heading
 
-| Color                                        | Hex                                                              |
-| -------------------------------------------- | ---------------------------------------------------------------- |
-| Danger (All Sensor Readings below parameter) | ![#FF554A](https://via.placeholder.com/10/FF554A?text=+) #FF554A |
-| Warning (Oxymeter Sensor Readings)           | ![#ff9e4a](https://via.placeholder.com/10/ff9e4a?text=+) #ff9e4a |
-| Warning (Temperature Sensor Readings)        | ![#FFC74A](https://via.placeholder.com/10/FFC74A?text=+) #FFC74A |
-| Normal                                       | ![#4aff70](https://via.placeholder.com/10/4aff70?text=+) #4aff70 |
-| Newly Added Card / Deleted Data              | ![#fcf0f0](https://via.placeholder.com/10/fcf0f0?text=+) #fcf0f0 |
+| Color                                               | Hex                                                              |
+| --------------------------------------------------- | ---------------------------------------------------------------- |
+| Danger (All Sensor Readings below parameter)        | ![#FF706F](https://via.placeholder.com/10/ff706f?text=+) #FF706F |
+| Warning (1 or 2 of sensor readings below parameter) | ![#FED597](https://via.placeholder.com/10/fed597?text=+) #FED597 |
+| Normal                                              | ![#5F8D4E](https://via.placeholder.com/10/5f8d4e?text=+) #5F8D4E |
+| No data                                             | ![#C9C9C9](https://via.placeholder.com/10/c9c9c9?text=+) #C9C9C9 |
 
 ## Environment Variables
 
 To connect to firebase RTDB, you will need to add the following environment variables to your .env file
 
-`REACT_APP_FirebaseApiKey="apiKey"`
+`NEXT_PUBLIC_FirebaseApiKey="apiKey"`
 
-`REACT_APP_FirebaseAuthDomain="authDomain"`
+`NEXT_PUBLIC_FirebaseAuthDomain="authDomain"`
 
-`REACT_APP_FirebaseProjectId="firebaseProjectId"`
+`NEXT_PUBLIC_FirebaseProjectId="firebaseProjectId"`
 
-`REACT_APP_FirebaseStorageBucket="StorageBucket"`
+`NEXT_PUBLIC_FirebaseStorageBucket="StorageBucket"`
 
-`REACT_APP_FirebaseMessagingSenderId="msgSenderId"`
+`NEXT_PUBLIC_FirebaseMessagingSenderId="msgSenderId"`
 
-`REACT_APP_FirebaseAppId="appId"`
+`NEXT_PUBLIC_FirebaseAppId="appId"`
 
 You can find the config [Firebase Console](https://console.firebase.google.com) under Project Settings or if you want to directly edit the
 [firebase.config.js](https://github.com/ikbakkk/Esp32-Hospital-Monitoring-System/blob/main/src/config/firebase.config.js) it's the same.
@@ -44,9 +42,8 @@ You can find the config [Firebase Console](https://console.firebase.google.com) 
 
 - Next.js
 - [Firebase Realtime Database](https://firebase.google.com/products/realtime-database)
-- [React Query Firebase Hook](react-query-firebase.invertase.dev)
 - [React Query](https://tanstack.com/query/v4/?from=reactQueryV3&original=https://react-query-v3.tanstack.com/)
-- [Toastify](https://fkhadra.github.io/react-toastify/)
+- [React Query Firebase](react-query-firebase.invertase.dev)
 - [Recharts](https://recharts.org)
 
 **Library for used sensor in this project**
@@ -59,7 +56,7 @@ You can find the config [Firebase Console](https://console.firebase.google.com) 
 
 JSON format for firebase realtime databse
 
-```json
+```JSON
 {
   "userId": { //main node path for react query firebase hook
     "1": { // sensor id
@@ -79,9 +76,12 @@ JSON format for firebase realtime databse
         },
         {...},
         {...},
-    }
+    },
     "2": {...},
     "3": {...},
+    }
+  }
+}
 ```
 
 <!-- **How it's look like in firebase console**

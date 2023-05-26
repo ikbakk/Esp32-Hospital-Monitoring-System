@@ -22,7 +22,7 @@ const Catatan = () => {
         <div className='w-full py-16'>
           <div className='flex w-full flex-row flex-wrap justify-evenly gap-y-10'>
             {data?.map((data, index) => (
-              <div key={index} className='w-80'>
+              <div key={index} className='mx-2 my-2 w-80'>
                 <ReportTable
                   name={data.nama}
                   sensorId={index}

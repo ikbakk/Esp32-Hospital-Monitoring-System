@@ -45,7 +45,7 @@ const ReportTable: FC<ReportTableProps> = ({
         <div className='flex w-full justify-center'>
           <DownloadButton
             name={name}
-            title='Export to CSV File'
+            title='Download records in .xlsx'
             nilai={nilai}
             roomNumber={sensorId + 1}
           />

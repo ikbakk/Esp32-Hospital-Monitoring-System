@@ -10,7 +10,6 @@ import DetailHeader from '@/components/Detail/DetailHeader';
 import DetailReading from '@/components/Detail/DetailReading';
 import { FaHeartbeat, FaLungs, FaTemperatureHigh } from 'react-icons/fa';
 import ReportTable from '@/components/ReportTable';
-import { subscribe } from 'diagnostics_channel';
 
 const DetailPage = () => {
   const slug = Number(useParams().slug);

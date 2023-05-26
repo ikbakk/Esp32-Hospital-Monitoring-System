@@ -19,6 +19,12 @@ interface Props {
   handleClick: () => void;
 }
 
+interface RangeObject {
+  rangeBeat: boolean;
+  rangeSpo2: boolean;
+  rangeTemp: boolean;
+}
+
 const FrontSide: FC<Props> = ({
   id,
   nama,
@@ -30,33 +36,32 @@ const FrontSide: FC<Props> = ({
   setIsFlipped,
   handleClick
 }) => {
-   const danger = { a: false, b: false, c: false };
-  const warnBeat = { a: false, b: true, c: true };
-  const warnOxy = { a: true, b: false, c: true };
-  const warnTemp = { a: true, b: true, c: false };
-
   const range = () => {
     const rangeBeat = _.inRange(_.mean(_.compact(beat)), 60, 100);
     const rangeSpo2 = _.inRange(_.mean(_.compact(spo2)), 95, 100);
     const rangeTemp = _.inRange(_.mean(_.compact(temp)), 36.1, 37.2);
-    return { a: rangeBeat, b: rangeSpo2, c: rangeTemp };
+
+    return { rangeBeat, rangeSpo2, rangeTemp };
   };
 
   const paramRange = range();
 
-  const colorCode = (object: { [key: string]: boolean }) => {
-    if (_.isEqual(_.mean(beat), 0)) {
-      return 'bg-abu';
-    } else if (_.isEqual(object, danger)) {
-      return 'bg-merah';
-    } else if (
-      _.isEqual(object, warnOxy) === true ||
-      _.isEqual(object, warnTemp) === true ||
-      _.isEqual(object, warnBeat) === true
-    ) {
-      return 'bg-kuning';
-    } else {
-      return 'bg-hijauTerang';
+  const colorCode = ({ rangeBeat, rangeSpo2, rangeTemp }: RangeObject) => {
+    switch (true) {
+      case !rangeBeat && !rangeSpo2 && !rangeTemp:
+        return 'bg-merah';
+      case !rangeBeat && rangeSpo2 && rangeTemp:
+      case !rangeBeat && !rangeSpo2 && rangeTemp:
+      case !rangeBeat && rangeSpo2 && !rangeTemp:
+      case rangeBeat && !rangeSpo2 && !rangeTemp:
+      case rangeBeat && rangeSpo2 && !rangeTemp:
+      case rangeBeat && !rangeSpo2 && !rangeTemp:
+      case rangeBeat && !rangeSpo2 && rangeTemp:
+        return 'bg-kuning';
+      case rangeBeat && rangeSpo2 && rangeTemp:
+        return 'bg-hijauTerang';
+      default:
+        return 'bg-abu';
     }
   };
   return (

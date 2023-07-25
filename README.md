@@ -1,5 +1,7 @@
 # ESP32 Hospital rooms monitoring system
 
+The [Live version](https://esp32-hospital-monitoring-system.vercel.app/) might not working because the Hardware probably turned off
+
 As a project for my college degree, a react app modifying
 [Hospital monitoing dashboard by DamascenoRafael](https://github.com/DamascenoRafael/hospital-monitor-dashboard) by changing it from MQTT protocols into using Firebase Realtime Database combined with Espressif ESP32 to get Heartrate, Spo2, and Temperature. Also migrate using Next.js
 
@@ -57,7 +59,7 @@ You can find the config [Firebase Console](https://console.firebase.google.com) 
 JSON format for firebase realtime databse
 
 ```JSON
-{
+[
   "userId": { //main node path for react query firebase hook
     "1": { // sensor id
       "nama": "nama pasien",
@@ -67,21 +69,9 @@ JSON format for firebase realtime databse
           "spo2": 0,
           "temp": 0,
           "timestamp": 0
-        },
-        "-NHFthv1Kuf5ohur0YOd": {
-          "beat": beat,
-          "spo2": spo2,
-          "temp": temp,
-          "timestamp": timestamp
-        },
-        {...},
-        {...},
-    },
-    "2": {...},
-    "3": {...},
-    }
+        }
   }
-}
+]
 ```
 
 <!-- **How it's look like in firebase console**

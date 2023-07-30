@@ -90,12 +90,7 @@ const DetailPage = () => {
           <div className='flex w-full flex-row justify-evenly p-6 lg:px-20'>
             <div className='flex w-full flex-col space-y-5'>
               <>{detailReadings}</>
-              <ReportTable
-                name={data?.nama ?? ''}
-                nilai={nilai}
-                sensorId={slug}
-                showName={false}
-              />
+              <ReportTable data={data ?? ({} as User)} showName={false} />
             </div>
           </div>
         </div>

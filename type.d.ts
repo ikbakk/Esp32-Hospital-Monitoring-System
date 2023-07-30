@@ -10,6 +10,7 @@ export interface Nilai {
 export interface User {
   nama: string;
   nilai: Nilai;
+  noKamar?: number
 }
 
 export interface NilaiArr {
@@ -19,4 +20,10 @@ export interface NilaiArr {
     temp: number;
     timestamp: number;
   };
+}
+
+export interface NormalRangeCheckerType {
+  rangeBeat: boolean;
+  rangeSpo2: boolean;
+  rangeTemp: boolean;
 }

@@ -1,7 +1,7 @@
 import { FC, Fragment, useContext, useState, useEffect } from 'react';
 
 import { Dialog, Transition } from '@headlessui/react';
-import { CardContext } from './RoomCard/RoomCard';
+import { CardContext } from './RoomCard/RoomCardContextProvider';
 import EditForm from './EditForm';
 import DeleteConfirm from './DeleteConfirm';
 import { useDatabaseUpdateMutation } from '@react-query-firebase/database';

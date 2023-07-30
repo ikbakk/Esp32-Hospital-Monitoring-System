@@ -4,7 +4,8 @@ import { User } from '@/type';
 import { mainPathRef } from '@/utils/firebase';
 import { useDatabaseValue } from '@react-query-firebase/database';
 
-import RoomCard from '@/components/RoomCard/RoomCard';
+import RoomCard from '@/components/RoomCard';
+import RoomCardContextProvider from '@/components/RoomCard/RoomCardContextProvider';
 
 export default function Home() {
   const { data, isLoading } = useDatabaseValue<User[]>(
@@ -22,13 +23,12 @@ export default function Home() {
       ) : (
         <div className='w-full py-16'>
           <div className='flex h-full flex-row flex-wrap justify-evenly'>
-            {data?.map((datum, index) => (
-              <RoomCard
-                key={index}
-                id={index}
-                dataUser={datum}
-                isLoading={isLoading}
-              />
+            {data?.map(data => (
+              <RoomCardContextProvider
+                roomNumber={data.noKamar ?? 0}
+                key={data.nama.toLowerCase()}>
+                <RoomCard data={data} isLoading={isLoading} />
+              </RoomCardContextProvider>
             ))}
           </div>
         </div>

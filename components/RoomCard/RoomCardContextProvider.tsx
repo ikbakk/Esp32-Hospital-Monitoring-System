@@ -1,23 +1,10 @@
-import { FC, createContext, useState } from 'react';
-
-interface CardContext {
-  type: 'edit' | 'add' | 'delete' | null;
-  dialogTitle: string;
-  roomNumber: number;
-  isFlipped: boolean;
-  setDialogTitle: React.Dispatch<React.SetStateAction<string>>;
-  setIsFlipped: React.Dispatch<React.SetStateAction<boolean>>;
-  setType: React.Dispatch<
-    React.SetStateAction<'edit' | 'add' | 'delete' | null>
-  >;
-}
+import { FC, useState } from 'react';
+import { CardContext } from '../../utils/CardContext';
 
 interface RoomCardContextProviderProps {
   children: React.ReactNode;
   roomNumber: number;
 }
-
-export const CardContext = createContext<CardContext>({} as CardContext);
 
 const RoomCardContextProvider: FC<RoomCardContextProviderProps> = ({
   children,

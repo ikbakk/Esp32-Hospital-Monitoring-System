@@ -6,6 +6,8 @@ import { useDatabaseValue } from '@react-query-firebase/database';
 
 import RoomCard from '@/components/RoomCard';
 import RoomCardContextProvider from '@/components/RoomCard/RoomCardContextProvider';
+import ModalContextProvider from '@/components/Modals/ModalContextProvider';
+import Modal from '@/components/Modals';
 
 export default function Home() {
   const { data, isLoading } = useDatabaseValue<User[]>(
@@ -27,7 +29,10 @@ export default function Home() {
               <RoomCardContextProvider
                 roomNumber={data.noKamar ?? 0}
                 key={data.nama.toLowerCase()}>
-                <RoomCard data={data} isLoading={isLoading} />
+                <ModalContextProvider>
+                  <RoomCard data={data} isLoading={isLoading} />
+                  <Modal />
+                </ModalContextProvider>
               </RoomCardContextProvider>
             ))}
           </div>

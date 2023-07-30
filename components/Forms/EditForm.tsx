@@ -1,7 +1,7 @@
 import { FC } from 'react';
 
 interface EditFormProps {
-  handleOnSubmit: (e: any) => void;
+  handleOnSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   setInput: React.Dispatch<React.SetStateAction<string>>;
 }
 

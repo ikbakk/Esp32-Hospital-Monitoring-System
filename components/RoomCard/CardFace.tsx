@@ -1,14 +1,15 @@
 import { Nilai } from '@/type';
 import { FC, useContext } from 'react';
-import { CardContext } from './RoomCardContextProvider';
-import useNormalRange from '@/app/hooks/useNormalRange';
-import useColorCode from '@/app/hooks/useColorCode';
-import useDataExtraction from '@/app/hooks/useDataExtraction';
+import { CardContext } from '@/utils/CardContext';
+import useNormalRange from '@/hooks/useNormalRange';
+import useColorCode from '@/hooks/useColorCode';
+import useDataExtraction from '@/hooks/useDataExtraction';
 
 import Header from './Header';
 import Footer from './Footer';
 import FrontSideBody from './FrontSideBody';
 import BackSideBody from './BackSideBody';
+import { ModalContext } from '@/utils/ModalContext';
 
 interface CardFaceProps {
   roomNumber: number;
@@ -23,6 +24,7 @@ const CardFace: FC<CardFaceProps> = ({ roomNumber, nama, nilai, side }) => {
   const { beat, spo2, temp, timestamp } = useDataExtraction(nilai);
   const { setDialogTitle, setType, setIsFlipped, isFlipped } =
     useContext(CardContext);
+  const { setIsOpen } = useContext(ModalContext);
 
   const firstTimestamp = timestamp[0];
   const latestTimestamp = timestamp[timestamp.length - 1];
@@ -31,12 +33,14 @@ const CardFace: FC<CardFaceProps> = ({ roomNumber, nama, nilai, side }) => {
     e.stopPropagation();
     setDialogTitle('Are you sure?');
     setType('delete');
+    setIsOpen(true);
   };
 
   const handleEditName = (e: React.MouseEvent<SVGElement>) => {
     e.stopPropagation();
-    setDialogTitle(`Edit Room ${roomNumber + 1} Info`);
+    setDialogTitle(`Edit Room ${roomNumber} Info`);
     setType('edit');
+    setIsOpen(true);
   };
 
   const handleCardFlip = (e: React.MouseEvent<SVGElement>) => {

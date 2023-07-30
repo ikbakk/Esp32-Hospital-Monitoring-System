@@ -1,7 +1,7 @@
 'use client';
 
 import { FC, ReactNode } from 'react';
-import useStatistics from '@/app/hooks/useStatistics';
+import useStatistics from '@/hooks/useStatistics';
 
 interface BackSideBodyTableProps {
   icon: ReactNode;

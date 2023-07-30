@@ -1,6 +1,6 @@
 import { User } from '@/type';
 import { FC, useContext } from 'react';
-import { CardContext } from './RoomCardContextProvider';
+import { CardContext } from '@/utils/CardContext';
 
 import Loading from './Loading';
 import CardFace from './CardFace';

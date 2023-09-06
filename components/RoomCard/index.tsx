@@ -1,16 +1,17 @@
 import { User } from '@/type';
-import { FC, useContext } from 'react';
+import { useContext } from 'react';
 import { CardContext } from '@/utils/CardContext';
 
 import Loading from './Loading';
 import CardFace from './CardFace';
+import Link from 'next/link';
 
 interface RoomCardContainerProps {
   data: User;
   isLoading: boolean;
 }
 
-const RoomCard: FC<RoomCardContainerProps> = ({ isLoading, data }) => {
+const RoomCard = ({ isLoading, data }: RoomCardContainerProps) => {
   const { nama, nilai, noKamar } = data;
   const { isFlipped } = useContext(CardContext);
 
@@ -42,11 +43,11 @@ const RoomCard: FC<RoomCardContainerProps> = ({ isLoading, data }) => {
   );
 
   return (
-    <div className='card-container mx-2 my-2'>
+    <Link href={`/detail/${noKamar - 1}`} className='card-container mx-2 my-2'>
       <div className={`${cardRotationClassName} card-face-body`}>
         {cardCurrentState}
       </div>
-    </div>
+    </Link>
   );
 };
 

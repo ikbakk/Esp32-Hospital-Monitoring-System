@@ -12,9 +12,9 @@ const BackSideBodyTable: FC<BackSideBodyTableProps> = ({ icon, dataArr }) => {
   return (
     <tr className='px-4 py-2 text-center'>
       <td>{icon}</td>
-      <td>{useStatistics(dataArr).minData}</td>
-      <td>{useStatistics(dataArr).avgData}</td>
-      <td>{useStatistics(dataArr).maxData}</td>
+      <td>{useStatistics(dataArr).minData.toString()}</td>
+      <td>{useStatistics(dataArr).avgData.toString()}</td>
+      <td>{useStatistics(dataArr).maxData.toString()}</td>
     </tr>
   );
 };

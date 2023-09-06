@@ -13,7 +13,6 @@ const useColorCode = ({
     case !rangeBeat && rangeSpo2 && !rangeTemp:
     case rangeBeat && !rangeSpo2 && !rangeTemp:
     case rangeBeat && rangeSpo2 && !rangeTemp:
-    case rangeBeat && !rangeSpo2 && !rangeTemp:
     case rangeBeat && !rangeSpo2 && rangeTemp:
       return 'bg-kuning';
     case rangeBeat && rangeSpo2 && rangeTemp:

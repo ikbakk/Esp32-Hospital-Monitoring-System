@@ -1,4 +1,4 @@
-import { FC, useState } from 'react';
+import { FC, useState, useMemo } from 'react';
 import { CardContext } from '../../utils/CardContext';
 
 interface RoomCardContextProviderProps {
@@ -14,7 +14,17 @@ const RoomCardContextProvider: FC<RoomCardContextProviderProps> = ({
   const [dialogTitle, setDialogTitle] = useState('');
   const [type, setType] = useState<'edit' | 'add' | 'delete' | null>(null);
 
-  const value = {
+  const value = useMemo(() => {
+    return {
+      type,
+      setType,
+      roomNumber,
+      dialogTitle,
+      setDialogTitle,
+      isFlipped,
+      setIsFlipped
+    };
+  }, [
     type,
     setType,
     roomNumber,
@@ -22,7 +32,7 @@ const RoomCardContextProvider: FC<RoomCardContextProviderProps> = ({
     setDialogTitle,
     isFlipped,
     setIsFlipped
-  };
+  ]);
 
   return <CardContext.Provider value={value}>{children}</CardContext.Provider>;
 };

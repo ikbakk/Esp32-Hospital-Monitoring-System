@@ -10,7 +10,7 @@ export interface Nilai {
 export interface User {
   nama: string;
   nilai: Nilai;
-  noKamar: number
+  noKamar: number;
 }
 
 export interface NilaiArr {

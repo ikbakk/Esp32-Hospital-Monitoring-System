@@ -2,16 +2,14 @@ import { User } from '@/type';
 import { useContext } from 'react';
 import { CardContext } from '@/utils/CardContext';
 
-import Loading from './Loading';
 import CardFace from './CardFace';
 import Link from 'next/link';
 
 interface RoomCardContainerProps {
   data: User;
-  isLoading: boolean;
 }
 
-const RoomCard = ({ isLoading, data }: RoomCardContainerProps) => {
+const RoomCard = ({ data }: RoomCardContainerProps) => {
   const { nama, nilai, noKamar } = data;
   const { isFlipped } = useContext(CardContext);
 
@@ -21,24 +19,18 @@ const RoomCard = ({ isLoading, data }: RoomCardContainerProps) => {
 
   const cardCurrentState = (
     <>
-      {isLoading ? (
-        <Loading />
-      ) : (
-        <>
-          <CardFace
-            nama={nama}
-            nilai={nilai}
-            roomNumber={noKamar ?? 0}
-            side='front'
-          />
-          <CardFace
-            nama={nama}
-            nilai={nilai}
-            roomNumber={noKamar ?? 0}
-            side='back'
-          />
-        </>
-      )}
+      <CardFace
+        nama={nama}
+        nilai={nilai}
+        roomNumber={noKamar ?? 0}
+        side='front'
+      />
+      <CardFace
+        nama={nama}
+        nilai={nilai}
+        roomNumber={noKamar ?? 0}
+        side='back'
+      />
     </>
   );
 

@@ -1,5 +1,3 @@
-'use client';
-
 import { FC } from 'react';
 import { FaHeartbeat, FaLungs, FaTemperatureHigh } from 'react-icons/fa';
 import BackSideBodyTable from './BackSideBodyTable';
@@ -16,18 +14,18 @@ const BackSideBody: FC<BackSideBodyProps> = ({ nama, beat, spo2, temp }) => {
     {
       icon: <FaHeartbeat size={22} />,
       dataArr: beat,
-      unit: 'bpm'
+      unit: 'bpm',
     },
     {
       icon: <FaLungs size={22} />,
       dataArr: spo2,
-      unit: '%'
+      unit: '%',
     },
     {
       icon: <FaTemperatureHigh size={22} />,
       dataArr: temp,
-      unit: '°C'
-    }
+      unit: '°C',
+    },
   ];
 
   const tableRows = tableData.map(({ icon, dataArr, unit }) => (

@@ -30,6 +30,7 @@ const CardFace: FC<CardFaceProps> = ({ roomNumber, nama, nilai, side }) => {
   const latestTimestamp = timestamp[timestamp.length - 1];
 
   const handleDelete = (e: React.MouseEvent<SVGElement>) => {
+    e.preventDefault();
     e.stopPropagation();
     setDialogTitle('Are you sure?');
     setType('delete');
@@ -37,6 +38,7 @@ const CardFace: FC<CardFaceProps> = ({ roomNumber, nama, nilai, side }) => {
   };
 
   const handleEditName = (e: React.MouseEvent<SVGElement>) => {
+    e.preventDefault();
     e.stopPropagation();
     setDialogTitle(`Edit Room ${roomNumber} Info`);
     setType('edit');
@@ -44,6 +46,7 @@ const CardFace: FC<CardFaceProps> = ({ roomNumber, nama, nilai, side }) => {
   };
 
   const handleCardFlip = (e: React.MouseEvent<SVGElement>) => {
+    e.preventDefault();
     e.stopPropagation();
     setIsFlipped(!isFlipped);
   };

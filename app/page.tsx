@@ -1,43 +1,12 @@
-'use client';
-
+import RoomCards from '@/components/Home/RoomCards';
 import { User } from '@/type';
-import { mainPathRef } from '@/utils/firebase';
-import { useDatabaseValue } from '@react-query-firebase/database';
+import { mainPathRef, db } from '@/utils/firebase';
 
-import RoomCard from '@/components/RoomCard';
-import RoomCardContextProvider from '@/components/RoomCard/RoomCardContextProvider';
-import ModalContextProvider from '@/components/Modals/ModalContextProvider';
-import Modal from '@/components/Modals';
+import { get } from 'firebase/database';
 
-export default function Home() {
-  const { data, isLoading } = useDatabaseValue<User[]>(
-    ['userId'],
-    mainPathRef,
-    { subscribe: true }
-  );
+export default async function Home() {
+  const dataSnapshot = await get(mainPathRef);
+  const snapshotValue = dataSnapshot.val() as User[];
 
-  return (
-    <>
-      {isLoading ? (
-        <div className='flex h-screen items-center justify-center'>
-          <p>Loading...</p>
-        </div>
-      ) : (
-        <div className='w-full py-16'>
-          <div className='flex h-full flex-row flex-wrap justify-evenly'>
-            {data?.map(data => (
-              <RoomCardContextProvider
-                roomNumber={data.noKamar ?? 0}
-                key={data.nama.toLowerCase()}>
-                <ModalContextProvider>
-                  <RoomCard data={data} isLoading={isLoading} />
-                  <Modal />
-                </ModalContextProvider>
-              </RoomCardContextProvider>
-            ))}
-          </div>
-        </div>
-      )}
-    </>
-  );
+  return <RoomCards initialData={snapshotValue} />;
 }

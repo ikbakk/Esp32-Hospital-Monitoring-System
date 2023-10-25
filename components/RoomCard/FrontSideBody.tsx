@@ -1,5 +1,3 @@
-'use client';
-
 import { FC } from 'react';
 import { FaHeartbeat, FaLungs, FaTemperatureHigh } from 'react-icons/fa';
 
@@ -14,7 +12,8 @@ const FrontSideBody: FC<FrontSideBodyProps> = ({ nama, beat, spo2, temp }) => {
   return (
     <section
       id='card-content-body'
-      className='h-full w-full gap-1 rounded-b-xl px-3'>
+      className='h-full w-full gap-1 rounded-b-xl px-3'
+    >
       <div className='line-clamp-2 flex h-1/4 items-center justify-center text-center text-lg'>
         <h3>{nama}</h3>
       </div>

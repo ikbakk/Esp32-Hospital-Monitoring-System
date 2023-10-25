@@ -27,15 +27,17 @@ To connect to firebase RTDB, you will need to add the following environment vari
 
 `NEXT_PUBLIC_FirebaseApiKey="apiKey"`
 
-`NEXT_PUBLIC_FirebaseAuthDomain="authDomain"`
+`NEXT_PUBLIC_FirebaseDatabaseURL="databaseURL"`
 
 `NEXT_PUBLIC_FirebaseProjectId="firebaseProjectId"`
 
-`NEXT_PUBLIC_FirebaseStorageBucket="StorageBucket"`
+and env for the server side
 
-`NEXT_PUBLIC_FirebaseMessagingSenderId="msgSenderId"`
+`FirebaseApiKey="apiKey"`
 
-`NEXT_PUBLIC_FirebaseAppId="appId"`
+`FirebaseDatabaseURL="databaseURL"`
+
+`FirebaseProjectId="firebaseProjectId"`
 
 You can find the config [Firebase Console](https://console.firebase.google.com) under Project Settings or if you want to directly edit the
 [firebase.config.js](https://github.com/ikbakkk/Esp32-Hospital-Monitoring-System/blob/main/src/config/firebase.config.js) it's the same.

@@ -3,19 +3,26 @@ import { NormalRangeCheckerType } from '@/type';
 const useColorCode = ({
   rangeBeat,
   rangeSpo2,
-  rangeTemp
+  rangeTemp,
 }: NormalRangeCheckerType): string => {
-  switch (true) {
-    case !rangeBeat && !rangeSpo2 && !rangeTemp:
+  const bit = (rangeBeat ? 4 : 0) | (rangeSpo2 ? 2 : 0) | (rangeTemp ? 1 : 0);
+
+  switch (bit) {
+    case 0:
       return 'bg-merah';
-    case !rangeBeat && rangeSpo2 && rangeTemp:
-    case !rangeBeat && !rangeSpo2 && rangeTemp:
-    case !rangeBeat && rangeSpo2 && !rangeTemp:
-    case rangeBeat && !rangeSpo2 && !rangeTemp:
-    case rangeBeat && rangeSpo2 && !rangeTemp:
-    case rangeBeat && !rangeSpo2 && rangeTemp:
+    case 1:
       return 'bg-kuning';
-    case rangeBeat && rangeSpo2 && rangeTemp:
+    case 2:
+      return 'bg-kuning';
+    case 3:
+      return 'bg-kuning';
+    case 4:
+      return 'bg-kuning';
+    case 5:
+      return 'bg-kuning';
+    case 6:
+      return 'bg-kuning';
+    case 7:
       return 'bg-hijauTerang';
     default:
       return 'bg-abu';

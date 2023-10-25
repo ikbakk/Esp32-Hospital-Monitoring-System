@@ -12,18 +12,21 @@ const Header: FC<HeaderProps> = ({
   colorCode,
   roomNumber,
   handleDelete,
-  handleEditName
+  handleEditName,
 }) => {
   return (
-    <header id='card-header' className={colorCode}>
+    <header
+      id='card-header'
+      className={colorCode === 'bg-kuning' ? 'bg-kuning' : colorCode}
+    >
       <RiEditLine
-        onClick={e => handleEditName(e)}
+        onClick={(e) => handleEditName(e)}
         size={20}
         className='card-button'
       />
       <p className='text-xl'>Ruang {roomNumber}</p>
       <RiCloseCircleLine
-        onClick={e => handleDelete(e)}
+        onClick={(e) => handleDelete(e)}
         size={20}
         className='card-button '
       />

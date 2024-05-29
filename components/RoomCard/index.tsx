@@ -8,20 +8,16 @@ import { useDatabaseValue } from '@react-query-firebase/database';
 import { dynamicPathRef } from '@/utils/firebase';
 
 interface RoomCardContainerProps {
-  data: User;
+  noKamar: number;
 }
 
-const RoomCard = ({ data }: RoomCardContainerProps) => {
-  const { nama, noKamar } = data;
+const RoomCard = ({ noKamar }: RoomCardContainerProps) => {
   const { isFlipped } = useContext(CardContext);
   const { data: roomData } = useDatabaseValue<User>(
-    [`userId/${noKamar}`],
-    dynamicPathRef(noKamar),
+    [`userId/${noKamar - 1}`],
+    dynamicPathRef(noKamar - 1),
     {
       subscribe: true,
-    },
-    {
-      initialData: data,
     }
   );
 
@@ -32,13 +28,13 @@ const RoomCard = ({ data }: RoomCardContainerProps) => {
   const cardCurrentState = (
     <>
       <CardFace
-        nama={nama}
+        nama={roomData?.nama!}
         nilai={roomData?.nilai!}
         roomNumber={noKamar ?? 0}
         side='front'
       />
       <CardFace
-        nama={nama}
+        nama={roomData?.nama!}
         nilai={roomData?.nilai!}
         roomNumber={noKamar ?? 0}
         side='back'
@@ -49,7 +45,7 @@ const RoomCard = ({ data }: RoomCardContainerProps) => {
   return (
     <Link href={`/detail/${noKamar - 1}`} className='card-container mx-2 my-2'>
       <div className={`${cardRotationClassName} card-face-body`}>
-        {cardCurrentState}
+        {roomData?.nilai ? <>{cardCurrentState}</> : <div>...</div>}
       </div>
     </Link>
   );

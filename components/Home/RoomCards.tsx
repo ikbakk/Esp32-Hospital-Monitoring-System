@@ -13,29 +13,28 @@ type RoomCardsProps = {
 };
 
 const RoomCards = ({ initialData }: RoomCardsProps) => {
-  const { data } = useDatabaseValue<User[]>(
-    ['userId'],
-    mainPathRef,
-    { subscribe: true },
-    {
-      initialData,
-    }
-  );
+  const { data } = useDatabaseValue<User[]>(['userId'], mainPathRef, {
+    subscribe: true,
+  }, {
+    initialData
+  });
 
   return (
     <div className='w-full py-16'>
       <div className='flex h-full flex-row flex-wrap justify-evenly'>
-        {data?.map((data) => (
-          <RoomCardContextProvider
-            roomNumber={data.noKamar ?? 0}
-            key={data.nama.toLowerCase()}
-          >
-            <ModalContextProvider>
-              <RoomCard data={data} />
-              <Modal />
-            </ModalContextProvider>
-          </RoomCardContextProvider>
-        ))}
+        {data
+          ? data?.map((data) => (
+              <RoomCardContextProvider
+                roomNumber={data.noKamar ?? 0}
+                key={data.nama.toLowerCase() + data.noKamar}
+              >
+                <ModalContextProvider>
+                  <RoomCard noKamar={data.noKamar} />
+                  <Modal />
+                </ModalContextProvider>
+              </RoomCardContextProvider>
+            ))
+          : null}
       </div>
     </div>
   );

@@ -8,10 +8,7 @@ import { get } from 'firebase/database';
 export default async function Home() {
   const dataSnapshot = await get(mainPathRef);
   const snapshotValue = dataSnapshot.val() as User[];
+  const values = snapshotValue.map((data) => data.nilai);
 
-  return (
-    <>
-      {!snapshotValue ? <Empty /> : <RoomCards initialData={snapshotValue} />}
-    </>
-  );
+  return <>{!values ? <Empty /> : <RoomCards initialData={snapshotValue} />}</>;
 }

@@ -4,14 +4,26 @@ import { CardContext } from '@/utils/CardContext';
 
 import CardFace from './CardFace';
 import Link from 'next/link';
+import { useDatabaseValue } from '@react-query-firebase/database';
+import { dynamicPathRef } from '@/utils/firebase';
 
 interface RoomCardContainerProps {
   data: User;
 }
 
 const RoomCard = ({ data }: RoomCardContainerProps) => {
-  const { nama, nilai, noKamar } = data;
+  const { nama, noKamar } = data;
   const { isFlipped } = useContext(CardContext);
+  const { data: roomData } = useDatabaseValue<User>(
+    [`userId/${noKamar}`],
+    dynamicPathRef(noKamar),
+    {
+      subscribe: true,
+    },
+    {
+      initialData: data,
+    }
+  );
 
   const cardRotationClassName = isFlipped
     ? '[transform:rotateY(180deg)]'
@@ -21,13 +33,13 @@ const RoomCard = ({ data }: RoomCardContainerProps) => {
     <>
       <CardFace
         nama={nama}
-        nilai={nilai}
+        nilai={roomData?.nilai!}
         roomNumber={noKamar ?? 0}
         side='front'
       />
       <CardFace
         nama={nama}
-        nilai={nilai}
+        nilai={roomData?.nilai!}
         roomNumber={noKamar ?? 0}
         side='back'
       />

@@ -14,11 +14,7 @@ const DetailPage = async ({ params }: PageProps) => {
   const dataSnapshot = await get(dynamicPathRef(slug));
   const snapshotValue = dataSnapshot.val() as User;
 
-  return (
-    <>
-      <Details initialData={snapshotValue} slug={slug} />
-    </>
-  );
+  return <Details initialData={snapshotValue} slug={slug} />;
 };
 
 export default DetailPage;

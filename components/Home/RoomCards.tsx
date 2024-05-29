@@ -16,7 +16,7 @@ const RoomCards = ({ initialData }: RoomCardsProps) => {
   const { data } = useDatabaseValue<User[]>(
     ['userId'],
     mainPathRef,
-    {},
+    { subscribe: true },
     {
       initialData,
     }

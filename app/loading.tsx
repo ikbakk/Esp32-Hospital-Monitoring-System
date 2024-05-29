@@ -1,8 +1,6 @@
 import Loading from '@/components/Loading';
 
-type LoadingPageProps = {};
-
-const LoadingPage = ({}: LoadingPageProps) => {
+const LoadingPage = () => {
   return (
     <div className='flex h-full items-center justify-center'>
       <Loading />

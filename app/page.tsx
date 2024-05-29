@@ -1,3 +1,4 @@
+import Empty from '@/components/Empty';
 import RoomCards from '@/components/Home/RoomCards';
 import { User } from '@/type';
 import { mainPathRef } from '@/utils/firebase';
@@ -8,5 +9,9 @@ export default async function Home() {
   const dataSnapshot = await get(mainPathRef);
   const snapshotValue = dataSnapshot.val() as User[];
 
-  return <RoomCards initialData={snapshotValue} />;
+  return (
+    <>
+      {!snapshotValue ? <Empty /> : <RoomCards initialData={snapshotValue} />}
+    </>
+  );
 }

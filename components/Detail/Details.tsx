@@ -10,6 +10,7 @@ import DetailHeader from '@/components/Detail/DetailHeader';
 import DetailReading from '@/components/Detail/DetailReading';
 import ReportTable from '@/components/ReportTable';
 import { FaHeartbeat, FaLungs, FaTemperatureHigh } from 'react-icons/fa';
+import AverageReading from './AverageReadings';
 
 type DetailsProps = {
   slug: string;
@@ -91,6 +92,7 @@ const Details = ({ slug, initialData }: DetailsProps) => {
       </div>
       <div className='flex w-full flex-row justify-evenly p-6 lg:px-20'>
         <div className='flex w-full flex-col space-y-5'>
+          <AverageReading data={data} />
           <>{detailReadings}</>
           <ReportTable data={data ?? ({} as User)} showName={false} />
         </div>

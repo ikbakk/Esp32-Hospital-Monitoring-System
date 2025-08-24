@@ -50,7 +50,7 @@ export const getAbnormalities = (vitals: Patient["vitals"]) => {
 
 const PatientCard = ({ patient }: { patient: Patient }) => {
   return (
-    <Card className="w-64 xl:w-72">
+    <Card className="w-64 xl:w-72 border border-gray-800">
       <CardHeader
         className={`${getConditionColor(patient.condition)} text-white p-4`}
       >

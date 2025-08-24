@@ -80,7 +80,7 @@ const VitalSignCard = ({
     </div>
     <div className="text-right">
       <div
-        className={`text-lg font-bold ${isAbnormal ? "text-red-601" : "text-gray-900"}`}
+        className={`text-lg font-bold ${isAbnormal ? "text-red-600" : "text-gray-900"}`}
       >
         {value}
       </div>

@@ -1,4 +1,5 @@
 import { AlertTriangle, CheckCircle, Clock, XCircle } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -9,7 +10,6 @@ import {
 import type { Patient } from "@/types/PatientCard";
 import PatientCardContent from "./patientCardContent";
 import PatientInfo from "./patientInfo";
-import Link from "next/link";
 
 const getConditionColor = (condition: string) => {
   switch (condition) {

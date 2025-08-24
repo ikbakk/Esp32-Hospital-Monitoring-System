@@ -21,13 +21,8 @@ const pagesList = [
     icon: Home,
   },
   {
-    title: "Graphs",
-    url: "graphs",
-    icon: Inbox,
-  },
-  {
-    title: "History",
-    url: "history",
+    title: "Patient Records",
+    url: "records",
     icon: Calendar,
   },
 ];

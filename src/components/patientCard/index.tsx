@@ -9,6 +9,7 @@ import {
 import type { Patient } from "@/types/PatientCard";
 import PatientCardContent from "./patientCardContent";
 import PatientInfo from "./patientInfo";
+import Link from "next/link";
 
 const getConditionColor = (condition: string) => {
   switch (condition) {
@@ -50,7 +51,7 @@ export const getAbnormalities = (vitals: Patient["vitals"]) => {
 
 const PatientCard = ({ patient }: { patient: Patient }) => {
   return (
-    <Card className="w-64 xl:w-72 border border-gray-800">
+    <Card className="max-w w-full-sm border border-gray-800">
       <CardHeader
         className={`${getConditionColor(patient.condition)} text-white p-4`}
       >
@@ -86,9 +87,15 @@ const PatientCard = ({ patient }: { patient: Patient }) => {
             <Clock className="w-3 h-3" />
             <span>Last updated: {new Date().toLocaleTimeString()}</span>
           </div>
-          <Button variant="ghost" size="sm" className="h-6 text-xs">
-            View Details
-          </Button>
+          <Link href={`/patient/${patient.id}/details`}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 text-xs hover:cursor-pointer"
+            >
+              View Details
+            </Button>
+          </Link>
         </div>
       </CardFooter>
     </Card>

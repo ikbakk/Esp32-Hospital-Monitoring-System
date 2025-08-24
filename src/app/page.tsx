@@ -1,4 +1,4 @@
-import HomePage from "@/hooks/pages/home";
+import HomePage from "@/pages/home";
 import type { Patient } from "@/types/PatientCard";
 
 const mockPatients: Patient[] = [

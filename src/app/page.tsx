@@ -1,4 +1,4 @@
-import HomePage from "@/pages/home";
+import HomePage from "@/components/pages/home";
 import type { Patient } from "@/types/PatientCard";
 
 const mockPatients: Patient[] = [
@@ -70,19 +70,15 @@ const mockPatients: Patient[] = [
 
 export default function Home() {
   return (
-    <div className="flex p-4 w-full">
-      <div className="flex-1 p-6">
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">
-            Patient Monitoring
-          </h2>
-          <p className="text-gray-600">
-            Real-time vital signs and patient status
-          </p>
-        </div>
-
-        <HomePage mockPatients={mockPatients} />
+    <div className="flex-1 p-6 space-y-6">
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold text-gray-900">Patient Monitoring</h2>
+        <p className="text-gray-600">
+          Real-time vital signs and patient status
+        </p>
       </div>
+
+      <HomePage mockPatients={mockPatients} />
     </div>
   );
 }

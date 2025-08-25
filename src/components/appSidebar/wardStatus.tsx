@@ -53,7 +53,7 @@ const getConditionIcon = (condition: string) => {
 const WardStatus = ({ patientCount }: WardStatusProps) => {
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>WardStatus</SidebarGroupLabel>
+      <SidebarGroupLabel>Ward Status</SidebarGroupLabel>
       <SidebarGroupContent className="flex flex-col gap-1">
         <SidebarMenu>
           {patientConditions.map((condition) => (
@@ -76,7 +76,6 @@ const WardStatus = ({ patientCount }: WardStatusProps) => {
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
-        <Separator />
       </SidebarGroupContent>
     </SidebarGroup>
   );

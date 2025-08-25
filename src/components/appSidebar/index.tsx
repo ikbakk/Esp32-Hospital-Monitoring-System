@@ -1,10 +1,7 @@
-import { Calendar, Home, Inbox } from "lucide-react";
+import { Calendar, Home } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -12,8 +9,8 @@ import {
 } from "@/components/ui/sidebar";
 import { SidebarSearchForm } from "../sidebarSearchForm";
 import PagesList from "./pagesList";
+import WardStatus from "./wardStatus";
 
-// Menu items.
 const pagesList = [
   {
     title: "Home",
@@ -26,6 +23,12 @@ const pagesList = [
     icon: Calendar,
   },
 ];
+
+const patientCount = {
+  warning: 0,
+  critical: 0,
+  normal: 0,
+};
 
 export function AppSidebar() {
   return (
@@ -42,13 +45,7 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Ward Status</SidebarGroupLabel>
-          <SidebarGroupContent className="flex flex-col gap-1">
-            a
-          </SidebarGroupContent>
-        </SidebarGroup>
-
+        <WardStatus patientCount={patientCount} />
         <PagesList pages={pagesList} />
       </SidebarContent>
     </Sidebar>

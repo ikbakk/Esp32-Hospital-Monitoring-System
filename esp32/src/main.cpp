@@ -1,0 +1,197 @@
+#include <Arduino.h>
+#include <WiFi.h>
+#include <config.h>
+#include <firebase_setup.h>
+#include <types.h>
+#include <vitals.h>
+
+// Device configuration
+const String deviceId = "esp32_monitor_001";
+const String ROOM_NUMBER = "101";
+const String BED_NUMBER = "A";
+
+unsigned long lastReadingTime = 0;
+unsigned long lastPatientUpdate = 0;
+unsigned long lastDeviceUpdate = 0;
+unsigned long lastRoomUpdate = 0;
+
+const unsigned long READING_INTERVAL = 30000;         // 30 seconds
+const unsigned long PATIENT_UPDATE_INTERVAL = 300000; // 5 minutes
+const unsigned long DEVICE_UPDATE_INTERVAL = 60000;   // 1 minute
+const unsigned long ROOM_UPDATE_INTERVAL = 120000;    // 2 minutes
+
+// Sample patient data
+PatientRecord createSamplePatient() {
+  PatientRecord patient;
+
+  patient.id = deviceId + "_" + ROOM_NUMBER + "_" + BED_NUMBER;
+  patient.name = "John Doe";
+  patient.age = 45;
+  patient.dateOfBirth = "1979-03-15";
+  patient.gender = "Male";
+  patient.roomNumber = ROOM_NUMBER;
+  patient.bedNumber = BED_NUMBER;
+  patient.admissionDate = "2025-08-30T08:00:00Z";
+  patient.condition = PatientCondition::NORMAL;
+
+  // Contact info
+  patient.contactInfo.phone = "+1234567890";
+  patient.contactInfo.email = "john.doe@email.com";
+  patient.contactInfo.emergencyContact = "Jane Doe";
+  patient.contactInfo.emergencyPhone = "+1234567891";
+
+  // Medical info
+  patient.carePlan = "Standard monitoring for chest pain evaluation";
+  patient.attendingPhysician = "Dr. Smith";
+  patient.assignedNurse = "Nurse Johnson";
+  patient.insurance = "Health Insurance Plus";
+  patient.bloodType = "O+";
+  patient.monitoringStatus = MonitoringStatus::ACTIVE;
+
+  // Assigned devices
+  patient.assignedDevices.push_back(DEVICE_ID);
+
+  patient.createdAt = getCurrentTimestamp();
+  patient.updatedAt = getCurrentTimestamp();
+
+  return patient;
+}
+
+Device createSampleDevice() {
+  Device device;
+  device.id = DEVICE_ID;
+  device.deviceStatus = DeviceStatus::ACTIVE;
+  device.location.roomNumber = ROOM_NUMBER;
+  device.location.bedNumber = BED_NUMBER;
+  return device;
+}
+
+void setup() {
+  Serial.begin(115200);
+  Serial.println("\n🏥 Medical Monitoring System Starting...");
+
+  // Connect to WiFi
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  Serial.print("Connecting to WiFi");
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("\n✅ WiFi connected: " + WiFi.localIP().toString());
+
+  // Initialize Firebase
+  initFirebase();
+
+  // Initialize random seed for vitals generation
+  randomSeed(analogRead(0));
+
+  Serial.println("🔧 System Configuration:");
+  Serial.println("   Device ID: " + deviceId);
+  Serial.println("   Patient ID: " + deviceId);
+  Serial.println("   Room: " + ROOM_NUMBER + " Bed: " + BED_NUMBER);
+  Serial.println("   Reading Interval: " + String(READING_INTERVAL / 1000) +
+                 "s");
+
+  Serial.println("\n✅ Medical monitoring system ready!");
+
+  // Upload initial patient record
+  PatientRecord patient = createSamplePatient();
+  uploadPatientRecord(patient);
+
+  // Upload initial device status
+  Device device = createSampleDevice();
+  uploadDeviceStatus(device);
+}
+
+void loop() {
+  // Process Firebase results
+  processFirestoreResult(firestoreResult);
+
+  // Generate and upload vitals readings
+  if (millis() - lastReadingTime >= READING_INTERVAL) {
+    lastReadingTime = millis();
+
+    Serial.println("\n📊 Generating vital signs reading...");
+    DeviceReading reading =
+        generateEnhancedVitals(deviceId, deviceId, ROOM_NUMBER);
+
+    // Display vital signs
+    Serial.printf(
+        "   💓 Heart Rate: %.0f bpm (%s)\n", reading.vitalSigns.heartRate.value,
+        alertStatusToString(reading.vitalSigns.heartRate.alert.status).c_str());
+    Serial.printf(
+        "   🫁 SpO2: %.1f%% (%s)\n", reading.vitalSigns.spo2.value,
+        alertStatusToString(reading.vitalSigns.spo2.alert.status).c_str());
+    Serial.printf(
+        "   🌡️  Temperature: %.1f°C (%s)\n", reading.vitalSigns.bodyTemp.value,
+        alertStatusToString(reading.vitalSigns.bodyTemp.alert.status).c_str());
+
+    // Check for alerts
+    AlertStatus overallAlert = determineOverallAlertStatus(reading.vitalSigns);
+    if (overallAlert != AlertStatus::NONE) {
+      Serial.printf("🚨 ALERT: %s condition detected!\n",
+                    alertStatusToString(overallAlert).c_str());
+
+      // Create and upload alert summary
+      AlertSummary alert;
+      alert.patientName = "John Doe";
+      alert.roomNumber = ROOM_NUMBER;
+      alert.activeAlerts.heartRate = reading.vitalSigns.heartRate.alert.status;
+      alert.activeAlerts.spo2 = reading.vitalSigns.spo2.alert.status;
+      alert.activeAlerts.bodyTemp = reading.vitalSigns.bodyTemp.alert.status;
+      alert.alertCount =
+          (reading.vitalSigns.heartRate.alert.status != AlertStatus::NONE ? 1
+                                                                          : 0) +
+          (reading.vitalSigns.spo2.alert.status != AlertStatus::NONE ? 1 : 0) +
+          (reading.vitalSigns.bodyTemp.alert.status != AlertStatus::NONE ? 1
+                                                                         : 0);
+      alert.lastAlertTime = reading.timestamp;
+      alert.severity =
+          (overallAlert == AlertStatus::CRITICAL) ? "high" : "medium";
+
+      uploadAlertSummary(alert);
+    }
+
+    // Upload the reading
+    uploadDeviceReading(reading, deviceId);
+  }
+
+  // Update patient record periodically
+  if (millis() - lastPatientUpdate >= PATIENT_UPDATE_INTERVAL) {
+    lastPatientUpdate = millis();
+
+    Serial.println("📋 Updating patient record...");
+    PatientRecord patient = createSamplePatient();
+    patient.updatedAt = getCurrentTimestamp();
+    uploadPatientRecord(patient);
+  }
+
+  // Update device status periodically
+  if (millis() - lastDeviceUpdate >= DEVICE_UPDATE_INTERVAL) {
+    lastDeviceUpdate = millis();
+
+    Serial.println("🔧 Updating device status...");
+    Device device = createSampleDevice();
+    uploadDeviceStatus(device);
+  }
+
+  // Update room status periodically
+  if (millis() - lastRoomUpdate >= ROOM_UPDATE_INTERVAL) {
+    lastRoomUpdate = millis();
+
+    Serial.println("🏥 Updating room status...");
+    RoomStatus roomStatus;
+    roomStatus.roomNumber = ROOM_NUMBER;
+    roomStatus.patientCount = 1;
+    roomStatus.deviceCount = 1;
+    roomStatus.activeAlerts =
+        0; // This would be calculated from recent readings
+    roomStatus.totalReadings = 0; // This would be calculated from database
+    roomStatus.lastUpdate = getCurrentTimestamp();
+
+    updateRoomStatus(ROOM_NUMBER, roomStatus);
+  }
+
+  // Small delay for system stability
+  delay(100);
+}

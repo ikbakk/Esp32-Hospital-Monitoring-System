@@ -1,0 +1,237 @@
+#define ENABLE_USER_AUTH
+#define ENABLE_FIRESTORE
+
+#include "ExampleFunctions.h"
+#include <FirebaseClient.h>
+#include <WiFi.h>
+#include <math.h>
+#include <time.h>
+
+#define WIFI_SSID "Loto2"
+#define WIFI_PASSWORD "LotoWifi2"
+#define API_KEY "AIzaSyABA5ZxXkbk8ea3uyZwu8VHAuBxThojGOY"
+#define USER_EMAIL "iqbalfirdaus05@gmail.com"
+#define USER_PASSWORD "LotoFirebase12"
+#define FIREBASE_PROJECT_ID "ward-monitor"
+
+void process_data(AsyncResult &result);
+void create_vitals_reading_async(const String &deviceId);
+String getCurrentTimeString();
+String getReadingId();
+
+struct VitalRanges {
+  float hrMin = 60.0, hrMax = 100.0;
+  float spo2Min = 90.0, spo2Max = 100.0;
+  float tempMin = 34.0, tempMax = 37.5;
+};
+
+struct PatientVitals {
+  float heartRate;
+  float spo2;
+  float bodyTemp;
+  String timestamp;
+  String deviceId;
+  int readingSequence;
+};
+
+SSL_CLIENT ssl_client;
+using AsyncClient = AsyncClientClass;
+AsyncClient aClient(ssl_client);
+
+UserAuth user_auth(API_KEY, USER_EMAIL, USER_PASSWORD, 3000);
+FirebaseApp app;
+Firestore::Documents Docs;
+AsyncResult firestoreResult;
+
+VitalRanges vitalRanges;
+int reading_sequence = 0;
+unsigned long dataMillis = 0;
+const unsigned long READING_INTERVAL = 1000;
+
+String DEVICE_ID = "esp32_monitor_001";
+
+void processData(AsyncResult &result) {
+  if (!result.isResult())
+    return;
+
+  if (result.isEvent()) {
+    Firebase.printf("Event task: %s, msg: %s, code: %d\n", result.uid().c_str(),
+                    result.eventLog().message().c_str(),
+                    result.eventLog().code());
+  }
+
+  if (result.isDebug()) {
+    Firebase.printf("Debug task: %s, msg: %s\n", result.uid().c_str(),
+                    result.debug().c_str());
+  }
+
+  if (result.isError()) {
+    Firebase.printf("Error task: %s, msg: %s, code: %d\n", result.uid().c_str(),
+                    result.error().message().c_str(), result.error().code());
+  }
+
+  if (result.available()) {
+    Firebase.printf("Vitals uploaded: %s\n", result.uid().c_str());
+    Serial.println("✓ Reading successfully stored in Firestore");
+  }
+};
+
+void setup() {
+  Serial.begin(115200);
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+
+  Serial.print("Connecting to Wi-Fi");
+  while (WiFi.status() != WL_CONNECTED) {
+    Serial.print(".");
+    delay(300);
+  }
+  Serial.println();
+  Serial.print("Connected with IP: ");
+  Serial.println(WiFi.localIP());
+  Serial.println();
+  Serial.println("Initializing app...");
+
+  set_ssl_client_insecure_and_buffer(ssl_client);
+
+  initializeApp(aClient, app, getAuth(user_auth));
+  app.getApp<Firestore::Documents>(Docs);
+
+  Serial.println("Medical Vitals Monitor Started");
+  Serial.println("Simulating vitals for patient: " + DEVICE_ID);
+};
+
+void loop() {
+  app.loop();
+
+  if (app.ready() &&
+      (millis() - dataMillis > READING_INTERVAL || dataMillis == 0)) {
+    dataMillis = millis();
+    create_vitals_reading_async(DEVICE_ID);
+  }
+
+  processData(firestoreResult);
+};
+
+String getCurrentTimestamp() {
+  // Get current time - you might want to sync with NTP for accuracy
+  time_t now;
+  struct tm timeinfo;
+  time(&now);
+
+  if (!getLocalTime(&timeinfo)) {
+    // Fallback if NTP not configured
+    now = millis() / 1000 + 1725024000; // Approximate timestamp
+    timeinfo = *gmtime(&now);
+  }
+
+  char buffer[30];
+  strftime(buffer, sizeof(buffer), "%Y-%m-%dT%H:%M:%SZ", &timeinfo);
+  return String(buffer);
+};
+
+String getReadingId() { return "reading_" + getCurrentTimestamp(); }
+
+float generateRealisticValue(float minVal, float maxVal,
+                             float previousValue = -1) {
+  // Generate value with some trend continuity if previous value exists
+  float baseValue;
+  if (previousValue > 0) {
+    // Add some realistic variation (±5% of range)
+    float variation = (maxVal - minVal) * 0.05;
+    baseValue =
+        previousValue + random(-variation * 100, variation * 100) / 100.0;
+
+    // Keep within bounds
+    if (baseValue < minVal)
+      baseValue = minVal + (maxVal - minVal) * 0.1;
+    if (baseValue > maxVal)
+      baseValue = maxVal - (maxVal - minVal) * 0.1;
+  } else {
+    // First reading - random within normal range
+    baseValue = minVal + (maxVal - minVal) * random(0, 100) / 100.0;
+  }
+
+  return baseValue;
+};
+
+PatientVitals generateVitals(const String &deviceId) {
+  static float lastHR = -1, lastSpO2 = -1, lastTemp = -1;
+
+  PatientVitals vitals;
+
+  // Generate realistic vitals with some continuity
+  vitals.heartRate =
+      generateRealisticValue(vitalRanges.hrMin, vitalRanges.hrMax, lastHR);
+  vitals.spo2 = generateRealisticValue(vitalRanges.spo2Min, vitalRanges.spo2Max,
+                                       lastSpO2);
+  vitals.bodyTemp = generateRealisticValue(vitalRanges.tempMin,
+                                           vitalRanges.tempMax, lastTemp);
+
+  // Round to appropriate precision
+  vitals.heartRate = round(vitals.heartRate);
+  vitals.spo2 = round(vitals.spo2 * 10) / 10.0;         // 1 decimal place
+  vitals.bodyTemp = round(vitals.bodyTemp * 10) / 10.0; // 1 decimal place
+
+  vitals.timestamp = getCurrentTimestamp();
+  vitals.deviceId = DEVICE_ID;
+  vitals.readingSequence = ++reading_sequence;
+
+  // Store for next iteration continuity
+  lastHR = vitals.heartRate;
+  lastSpO2 = vitals.spo2;
+  lastTemp = vitals.bodyTemp;
+
+  return vitals;
+};
+
+void create_vitals_reading_async(const String &deviceId) {
+  PatientVitals vitals = generateVitals(deviceId);
+
+  Serial.println("📊 Generating vitals reading #" +
+                 String(vitals.readingSequence));
+  Serial.println("   HR: " + String(vitals.heartRate, 0) + " bpm");
+  Serial.println("   SpO2: " + String(vitals.spo2, 1) + "%");
+  Serial.println("   Temp: " + String(vitals.bodyTemp, 1) + "°C");
+  Serial.println("   Time: " + vitals.timestamp);
+
+  // Create document structure: patients/{patientId}/vitals/{readingId}
+  String documentPath = "devices/" + deviceId + "/vitals/" + getReadingId();
+
+  // Create the document with vital signs
+  Document<Values::Value> doc;
+
+  // Core vitals
+  doc.add("heartRate",
+          Values::Value(Values::IntegerValue((int)vitals.heartRate)));
+  doc.add("spo2", Values::Value(Values::DoubleValue(number_t(vitals.spo2, 1))));
+  doc.add("bodyTemp",
+          Values::Value(Values::DoubleValue(number_t(vitals.bodyTemp, 1))));
+  doc.add("timestamp", Values::Value(Values::StringValue(vitals.timestamp)));
+
+  // Metadata
+  doc.add("deviceId", Values::Value(Values::StringValue(vitals.deviceId)));
+  doc.add("patientId", Values::Value(Values::StringValue(vitals.deviceId)));
+  doc.add("readingSequence",
+          Values::Value(Values::IntegerValue(vitals.readingSequence)));
+
+  // Additional metadata for medical context
+  doc.add("measurementType",
+          Values::Value(Values::StringValue("continuous_monitoring")));
+  doc.add("deviceStatus", Values::Value(Values::StringValue("active")));
+  doc.add("dataQuality", Values::Value(Values::StringValue("good")));
+
+  // Alert flags based on vital ranges
+  Values::MapValue alertFlags(
+      "hrAlert",
+      Values::BooleanValue(vitals.heartRate < 60 || vitals.heartRate > 100));
+  alertFlags.add("spo2Alert", Values::BooleanValue(vitals.spo2 < 95));
+  alertFlags.add("tempAlert", Values::BooleanValue(vitals.bodyTemp < 36.1 ||
+                                                   vitals.bodyTemp > 37.2));
+  doc.add("alerts", Values::Value(alertFlags));
+
+  Serial.println("📤 Uploading to: " + documentPath);
+
+  // Upload to Firestore
+  Docs.createDocument(aClient, Firestore::Parent(FIREBASE_PROJECT_ID),
+                      documentPath, DocumentMask(), doc, firestoreResult);
+};

@@ -15,10 +15,10 @@ unsigned long lastPatientUpdate = 0;
 unsigned long lastDeviceUpdate = 0;
 unsigned long lastRoomUpdate = 0;
 
-const unsigned long READING_INTERVAL = 30000;         // 30 seconds
-const unsigned long PATIENT_UPDATE_INTERVAL = 300000; // 5 minutes
-const unsigned long DEVICE_UPDATE_INTERVAL = 60000;   // 1 minute
-const unsigned long ROOM_UPDATE_INTERVAL = 120000;    // 2 minutes
+const unsigned long READING_INTERVAL = 1000;         // 30 seconds
+const unsigned long PATIENT_UPDATE_INTERVAL = 10000; // 5 minutes
+const unsigned long DEVICE_UPDATE_INTERVAL = 1000;   // 1 minute
+const unsigned long ROOM_UPDATE_INTERVAL = 1000;     // 2 minutes
 
 // Sample patient data
 PatientRecord createSamplePatient() {

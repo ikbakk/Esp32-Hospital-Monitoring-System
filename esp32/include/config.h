@@ -5,15 +5,15 @@
 #include <Arduino.h>
 
 // ==================== WIFI CONFIGURATION ====================
-#define WIFI_SSID "your_wifi_ssid"
-#define WIFI_PASSWORD "your_wifi_password"
+#define WIFI_SSID "Loto2"
+#define WIFI_PASSWORD "LotoWifi2"
 #define WIFI_TIMEOUT_MS 30000
 
 // ==================== FIREBASE CONFIGURATION ====================
-#define API_KEY "your_api_key"
-#define USER_EMAIL "your_email@example.com"
-#define USER_PASSWORD "your_password"
-#define FIREBASE_PROJECT_ID "your_project_id"
+#define API_KEY "AIzaSyABA5ZxXkbk8ea3uyZwu8VHAuBxThojGOY"
+#define USER_EMAIL "iqbalfirdaus05@gmail.com"
+#define USER_PASSWORD "LotoFirebase12"
+#define FIREBASE_PROJECT_ID "ward-monitor"
 #define AUTH_EXPIRE_PERIOD 3000 // seconds (<3600)
 
 // ==================== DEVICE CONFIGURATION ====================
@@ -23,7 +23,7 @@
 #define DEFAULT_BED_NUMBER "A"
 
 // ==================== TIMING CONFIGURATION ====================
-#define VITAL_READING_INTERVAL_MS 30000   // 30 seconds
+#define VITAL_READING_INTERVAL_MS 1000    // 30 seconds
 #define PATIENT_UPDATE_INTERVAL_MS 300000 // 5 minutes
 #define DEVICE_UPDATE_INTERVAL_MS 60000   // 1 minute
 #define ROOM_UPDATE_INTERVAL_MS 120000    // 2 minutes

@@ -10,8 +10,6 @@ Document<Values::Value> createReadingDocument(const DeviceReading &reading,
   // Basic info
   doc.add("id", Values::Value(Values::StringValue(reading.id)));
   doc.add("timestamp", Values::Value(Values::StringValue(reading.timestamp)));
-  doc.add("deviceId", Values::Value(Values::StringValue(reading.deviceId)));
-  doc.add("patientId", Values::Value(Values::StringValue(patientId)));
 
   // Heart Rate
   Values::MapValue hrMap(

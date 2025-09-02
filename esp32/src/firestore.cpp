@@ -9,6 +9,26 @@ bool isFirebaseReady() {
   return ready;
 }
 
+bool ensureFirebaseReady(const String &operation) {
+  int retryCount = 0;
+  const int maxRetries = 3;
+
+  while (retryCount < maxRetries) {
+    if (app.ready()) {
+      return true;
+    }
+
+    Serial.printf("⚠️ Firebase not ready for %s (attempt %d/%d)\n",
+                  operation.c_str(), retryCount + 1, maxRetries);
+    delay(1000);
+    retryCount++;
+  }
+
+  Serial.printf("❌ Firebase failed to become ready for %s\n",
+                operation.c_str());
+  return false;
+}
+
 void processFirestoreResults() {
   if (firestoreResult.isResult()) {
     if (firestoreResult.isError()) {
@@ -47,8 +67,9 @@ void uploadPatientRecord(const PatientRecord &patient) {
 
 // Upload device status
 void uploadDeviceStatus(const Device &device) {
-  if (!isFirebaseReady())
-    return;
+  if (!isFirebaseReady()) {
+    Serial.println("⚠️ Firebase not ready - cannot upload device status");
+  }
 
   Document<Values::Value> doc = createDeviceDocument(device);
   String path = "devices/" + device.id;

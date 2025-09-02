@@ -24,6 +24,22 @@ void initFirebase() {
   // Initialize Firebase app with auth callback
   initializeApp(aClient, app, getAuth(user_auth));
 
+  Serial.println("⏳ Waiting for Firebase to be ready...");
+  int waitCount = 0;
+  while (!app.ready() && waitCount < 30) {
+    delay(1000);
+    waitCount++;
+    Serial.print(".");
+  }
+  Serial.println();
+
+  if (!app.ready()) {
+    Serial.println("❌ Firebase failed to initialize!");
+    Serial.println("   Check your credentials and network connection");
+  } else {
+    Serial.println("✅ Firebase initialized successfully");
+  }
+
   app.getApp<Firestore::Documents>(Docs);
 
   // Auto authenticate

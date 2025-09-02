@@ -5,15 +5,15 @@
 #include <Arduino.h>
 
 // ==================== WIFI CONFIGURATION ====================
-#define WIFI_SSID "SSID"
-#define WIFI_PASSWORD "PASSWORD"
+#define WIFI_SSID "Loto2"
+#define WIFI_PASSWORD "LotoWifi2"
 #define WIFI_TIMEOUT_MS 30000
 
 // ==================== FIREBASE CONFIGURATION ====================
-#define API_KEY "API"
-#define USER_EMAIL "email"
-#define USER_PASSWORD "passsword"
-#define FIREBASE_PROJECT_ID "firebase-project id"
+#define API_KEY "AIzaSyABA5ZxXkbk8ea3uyZwu8VHAuBxThojGOY"
+#define USER_EMAIL "iqbalfirdaus05@gmail.com"
+#define USER_PASSWORD "LotoFirebase12"
+#define FIREBASE_PROJECT_ID "ward-monitor"
 #define AUTH_EXPIRE_PERIOD 3000 // seconds (<3600)
 
 // ==================== DEVICE CONFIGURATION ====================

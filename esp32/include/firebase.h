@@ -26,7 +26,7 @@ bool verifyUser(const String &apiKey, const String &email,
                 const String &password);
 
 // Results
-void processFirebaseResults();
+void processFirestoreResults();
 
 // Upload
 void uploadVitalReading(const DeviceReading &reading, const String &patientId);

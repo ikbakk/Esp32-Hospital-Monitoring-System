@@ -1,0 +1,305 @@
+#include <config.h>
+#include <firebase_client.h>
+
+// Global Firebase objects
+Firestore::Documents Docs;
+AsyncResult firestoreResult;
+
+// Process all Firebase async results
+void processFirebaseResults() {
+  // Process the main result
+  if (firestoreResult.isResult()) {
+    if (firestoreResult.isError()) {
+      logFirebaseError("Firestore Operation", firestoreResult);
+    } else if (firestoreResult.available()) {
+      Serial.println("✅ Firestore operation completed successfully");
+    }
+  }
+
+  // Keep the app processing
+  app.loop();
+}
+
+// Check if Firebase is ready for operations
+bool isFirebaseReady() {
+  bool ready = app.ready();
+  if (!ready) {
+    Serial.println("⚠️  Firebase not ready - check authentication");
+  }
+  return ready;
+}
+
+// Upload vital reading to Firestore
+void uploadVitalReading(const DeviceReading &reading, const String &patientId) {
+  if (!isFirebaseReady())
+    return;
+
+  Document<Values::Value> doc = createReadingDocument(reading, patientId);
+  String path = "patients/" + patientId + "/readings/" + reading.id;
+
+  Serial.printf("📤 Uploading vital reading: %s\n", path.c_str());
+  Docs.createDocument(aClient, Firestore::Parent(FIREBASE_PROJECT_ID), path,
+                      DocumentMask(), doc, firestoreResult);
+}
+
+// Upload patient record
+void uploadPatientRecord(const PatientRecord &patient) {
+  if (!isFirebaseReady())
+    return;
+
+  Document<Values::Value> doc = createPatientDocument(patient);
+  String path = "patients/" + patient.id;
+
+  Serial.printf("📤 Uploading patient: %s\n", path.c_str());
+  Docs.createDocument(aClient, Firestore::Parent(FIREBASE_PROJECT_ID), path,
+                      DocumentMask(), doc, firestoreResult);
+}
+
+// Upload device status
+void uploadDeviceStatus(const Device &device) {
+  if (!isFirebaseReady())
+    return;
+
+  Document<Values::Value> doc = createDeviceDocument(device);
+  String path = "devices/" + device.id;
+
+  Serial.printf("📤 Uploading device: %s\n", path.c_str());
+  Docs.createDocument(aClient, Firestore::Parent(FIREBASE_PROJECT_ID), path,
+                      DocumentMask(), doc, firestoreResult);
+}
+
+// Upload alert
+void uploadAlert(const AlertSummary &alert) {
+  if (!isFirebaseReady())
+    return;
+
+  Document<Values::Value> doc = createAlertDocument(alert);
+  String alertId = "alert_" + String(millis()) + "_" + alert.roomNumber;
+  String path = "alerts/" + alertId;
+
+  Serial.printf("🚨 Uploading alert: %s\n", path.c_str());
+  Docs.createDocument(aClient, Firestore::Parent(FIREBASE_PROJECT_ID), path,
+                      DocumentMask(), doc, firestoreResult);
+}
+
+// Update room status
+void updateRoomStatus(const String &roomNumber, const RoomStatus &status) {
+  if (!isFirebaseReady())
+    return;
+
+  Document<Values::Value> doc = createRoomDocument(status);
+  String path = "rooms/" + roomNumber;
+
+  Serial.printf("🏥 Updating room: %s\n", path.c_str());
+  Docs.createDocument(aClient, Firestore::Parent(FIREBASE_PROJECT_ID), path,
+                      DocumentMask(), doc, firestoreResult);
+}
+
+// Create document for device reading
+Document<Values::Value> createReadingDocument(const DeviceReading &reading,
+                                              const String &patientId) {
+  Document<Values::Value> doc;
+
+  // Basic info
+  doc.add("id", Values::Value(Values::StringValue(reading.id)));
+  doc.add("timestamp", Values::Value(Values::StringValue(reading.timestamp)));
+  doc.add("deviceId", Values::Value(Values::StringValue(reading.deviceId)));
+  doc.add("patientId", Values::Value(Values::StringValue(patientId)));
+
+  // Heart Rate
+  Values::MapValue hrMap(
+      "value", Values::DoubleValue(reading.vitalSigns.heartRate.value));
+  Values::MapValue hrAlert("status",
+                           Values::StringValue(alertStatusToString(
+                               reading.vitalSigns.heartRate.alert.status)));
+  hrAlert.add(
+      "warningCount",
+      Values::IntegerValue(reading.vitalSigns.heartRate.alert.warningCount));
+  hrAlert.add(
+      "criticalCount",
+      Values::IntegerValue(reading.vitalSigns.heartRate.alert.criticalCount));
+  hrMap.add("alert", Values::Value(hrAlert));
+
+  // SpO2
+  Values::MapValue spo2Map("value",
+                           Values::DoubleValue(reading.vitalSigns.spo2.value));
+  Values::MapValue spo2Alert(
+      "status", Values::StringValue(
+                    alertStatusToString(reading.vitalSigns.spo2.alert.status)));
+  spo2Alert.add(
+      "warningCount",
+      Values::IntegerValue(reading.vitalSigns.spo2.alert.warningCount));
+  spo2Alert.add(
+      "criticalCount",
+      Values::IntegerValue(reading.vitalSigns.spo2.alert.criticalCount));
+  spo2Map.add("alert", Values::Value(spo2Alert));
+
+  // Body Temperature
+  Values::MapValue tempMap(
+      "value", Values::DoubleValue(reading.vitalSigns.bodyTemp.value));
+  Values::MapValue tempAlert("status",
+                             Values::StringValue(alertStatusToString(
+                                 reading.vitalSigns.bodyTemp.alert.status)));
+  tempAlert.add(
+      "warningCount",
+      Values::IntegerValue(reading.vitalSigns.bodyTemp.alert.warningCount));
+  tempAlert.add(
+      "criticalCount",
+      Values::IntegerValue(reading.vitalSigns.bodyTemp.alert.criticalCount));
+  tempMap.add("alert", Values::Value(tempAlert));
+
+  // Combine vital signs
+  Values::MapValue vitalSigns("heartRate", Values::Value(hrMap));
+  vitalSigns.add("spo2", Values::Value(spo2Map));
+  vitalSigns.add("bodyTemp", Values::Value(tempMap));
+  doc.add("vitalSigns", Values::Value(vitalSigns));
+
+  // Overall status
+  // AlertStatus overallStatus =
+  // determineOverallAlertStatus(reading.vitalSigns); doc.add("alertStatus",
+  // Values::Value(Values::StringValue(
+  //                            alertStatusToString(overallStatus))));
+  // doc.add("measurementType",
+  //         Values::Value(Values::StringValue("continuous_monitoring")));
+  // doc.add("dataQuality", Values::Value(Values::StringValue("good")));
+
+  return doc;
+}
+
+// Create document for patient record
+Document<Values::Value> createPatientDocument(const PatientRecord &patient) {
+  Document<Values::Value> doc;
+
+  // Basic info
+  doc.add("id", Values::Value(Values::StringValue(patient.id)));
+  doc.add("name", Values::Value(Values::StringValue(patient.name)));
+  doc.add("age", Values::Value(Values::IntegerValue(patient.age)));
+  doc.add("dateOfBirth",
+          Values::Value(Values::StringValue(patient.dateOfBirth)));
+  doc.add("gender", Values::Value(Values::StringValue(patient.gender)));
+  doc.add("roomNumber", Values::Value(Values::StringValue(patient.roomNumber)));
+  doc.add("bedNumber", Values::Value(Values::StringValue(patient.bedNumber)));
+  doc.add("admissionDate",
+          Values::Value(Values::StringValue(patient.admissionDate)));
+  doc.add("condition", Values::Value(Values::StringValue(
+                           patientConditionToString(patient.condition))));
+
+  // Contact info
+  Values::MapValue contact("phone",
+                           Values::StringValue(patient.contactInfo.phone));
+  contact.add("email", Values::StringValue(patient.contactInfo.email));
+  contact.add("emergencyContact",
+              Values::StringValue(patient.contactInfo.emergencyContact));
+  contact.add("emergencyPhone",
+              Values::StringValue(patient.contactInfo.emergencyPhone));
+  doc.add("contactInfo", Values::Value(contact));
+
+  // Medical info
+  doc.add("carePlan", Values::Value(Values::StringValue(patient.carePlan)));
+  doc.add("attendingPhysician",
+          Values::Value(Values::StringValue(patient.attendingPhysician)));
+  doc.add("assignedNurse",
+          Values::Value(Values::StringValue(patient.assignedNurse)));
+  doc.add("insurance", Values::Value(Values::StringValue(patient.insurance)));
+  doc.add("bloodType", Values::Value(Values::StringValue(patient.bloodType)));
+  doc.add("monitoringStatus",
+          Values::Value(Values::StringValue(
+              monitoringStatusToString(patient.monitoringStatus))));
+
+  // Assigned devices - simplified approach
+  Values::ArrayValue devices(Values::Value(Values::StringValue(
+      patient.assignedDevices.empty() ? "none" : patient.assignedDevices[0])));
+  for (size_t i = 1; i < patient.assignedDevices.size(); i++) {
+    devices.add(Values::Value(Values::StringValue(patient.assignedDevices[i])));
+  }
+  doc.add("assignedDevices", Values::Value(devices));
+
+  // Timestamps
+  doc.add("createdAt", Values::Value(Values::StringValue(patient.createdAt)));
+  doc.add("updatedAt", Values::Value(Values::StringValue(patient.updatedAt)));
+
+  return doc;
+}
+
+// Create document for device status
+Document<Values::Value> createDeviceDocument(const Device &device) {
+  Document<Values::Value> doc;
+
+  doc.add("id", Values::Value(Values::StringValue(device.id)));
+  doc.add("deviceStatus", Values::Value(Values::StringValue(
+                              deviceStatusToString(device.deviceStatus))));
+
+  // Location
+  Values::MapValue location("roomNumber",
+                            Values::StringValue(device.location.roomNumber));
+  location.add("bedNumber", Values::StringValue(device.location.bedNumber));
+  doc.add("location", Values::Value(location));
+
+  return doc;
+}
+
+// Create document for alert
+Document<Values::Value> createAlertDocument(const AlertSummary &alert) {
+  Document<Values::Value> doc;
+
+  doc.add("patientName", Values::Value(Values::StringValue(alert.patientName)));
+  doc.add("roomNumber", Values::Value(Values::StringValue(alert.roomNumber)));
+  doc.add("alertCount", Values::Value(Values::IntegerValue(alert.alertCount)));
+  doc.add("lastAlertTime",
+          Values::Value(Values::StringValue(alert.lastAlertTime)));
+  doc.add("severity", Values::Value(Values::StringValue(alert.severity)));
+
+  // Active alerts
+  Values::MapValue activeAlerts(
+      "heartRate",
+      Values::StringValue(alertStatusToString(alert.activeAlerts.heartRate)));
+  activeAlerts.add("spo2", Values::StringValue(
+                               alertStatusToString(alert.activeAlerts.spo2)));
+  activeAlerts.add("bodyTemp", Values::StringValue(alertStatusToString(
+                                   alert.activeAlerts.bodyTemp)));
+  doc.add("activeAlerts", Values::Value(activeAlerts));
+
+  return doc;
+}
+
+// Create document for room status
+Document<Values::Value> createRoomDocument(const RoomStatus &status) {
+  Document<Values::Value> doc;
+
+  doc.add("roomNumber", Values::Value(Values::StringValue(status.roomNumber)));
+  doc.add("patientCount",
+          Values::Value(Values::IntegerValue(status.patientCount)));
+  doc.add("deviceCount",
+          Values::Value(Values::IntegerValue(status.deviceCount)));
+  doc.add("activeAlerts",
+          Values::Value(Values::IntegerValue(status.activeAlerts)));
+  doc.add("totalReadings",
+          Values::Value(Values::IntegerValue(status.totalReadings)));
+
+  return doc;
+}
+
+// Log Firebase errors with context
+void logFirebaseError(const String &operation, const AsyncResult &result) {
+  // Serial.printf("❌ %s failed: %s (code: %d)\n", operation.c_str(),
+  //               result.error().message().c_str(), result.error().code());
+  //
+  // // Common error codes for debugging
+  // switch (result.error().code()) {
+  // case 401:
+  //   Serial.println(
+  //       "🔐 Authentication error - check API key and user credentials");
+  //   break;
+  // case 403:
+  //   Serial.println("🚫 Permission denied - check Firestore rules");
+  //   break;
+  // case 404:
+  //   Serial.println("📂 Document/Collection not found");
+  //   break;
+  // case 429:
+  //   Serial.println("⚡ Rate limited - too many requests");
+  //   break;
+
+  Serial.println("🔧 Check network connection and project configuration");
+  // }
+}

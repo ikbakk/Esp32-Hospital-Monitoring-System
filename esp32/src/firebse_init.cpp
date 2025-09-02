@@ -1,7 +1,6 @@
 #include "firebase.h"
 #include <config.h>
 
-// ==== Globals ====
 FirebaseApp app;
 UserAuth user_auth(API_KEY, USER_EMAIL, USER_PASSWORD, AUTH_EXPIRE_PERIOD);
 WiFiClientSecure ssl_client;
@@ -25,6 +24,9 @@ void initFirebase() {
   // Initialize Firebase app with auth callback
   initializeApp(aClient, app, getAuth(user_auth));
 
+  app.getApp<Firestore::Documents>(Docs);
+
+  // Auto authenticate
   app.autoAuthenticate(true);
 }
 

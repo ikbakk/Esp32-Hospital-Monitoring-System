@@ -1,59 +1,21 @@
 #include <config.h>
-#include <firebase_setup.h>
+#include <firebase.h>
+#include <types.h>
+#include <vitals.h>
 
-WiFiClientSecure ssl_client;
-FirebaseApp app;
-AsyncResult firestoreResult;
-Firestore::Documents Docs;
-using AsyncClient = AsyncClientClass;
-AsyncClient aClient(ssl_client);
-
-inline void set_ssl_client_insecure_and_buffer(WiFiClientSecure &client) {
-  client.setInsecure();
-}
-
-void initFirebase() {
-  Serial.println("🔥 Initializing Firebase...");
-  set_ssl_client_insecure_and_buffer(ssl_client);
-  UserAuth user_auth(API_KEY, USER_EMAIL, USER_PASSWORD, 3000);
-  initializeApp(aClient, app, getAuth(user_auth));
-  app.getApp<Firestore::Documents>(Docs);
-  Serial.println("✅ Firebase initialized");
-}
-
-void processFirestoreResult(AsyncResult &result) {
-  if (!result.isResult())
-    return;
-
-  if (result.isError()) {
-    Serial.printf("❌ Firestore Error: %s (code %d)\n",
-                  result.error().message().c_str(), result.error().code());
-  }
-
-  if (result.available()) {
-    Serial.println("✅ Data stored in Firestore successfully");
-  }
-}
-
-// Legacy upload function for backward compatibility
-void uploadVitals(const PatientVitals &vitals) {
-  DeviceReading reading = vitals.toDeviceReading();
-  uploadDeviceReading(reading, "patient_001"); // Default patient for legacy
-}
-
-// Upload enhanced device reading
-void uploadDeviceReading(const DeviceReading &reading,
-                         const String &patientId) {
+Document<Values::Value> createReadingDocument(const DeviceReading &reading,
+                                              const String &patientId) {
   Document<Values::Value> doc;
 
-  // Basic reading info
+  // Basic info
   doc.add("id", Values::Value(Values::StringValue(reading.id)));
   doc.add("timestamp", Values::Value(Values::StringValue(reading.timestamp)));
   doc.add("deviceId", Values::Value(Values::StringValue(reading.deviceId)));
+  doc.add("patientId", Values::Value(Values::StringValue(patientId)));
 
-  // Vital Signs - Heart Rate
-  Values::MapValue hrMap("value", Values::DoubleValue(number_t(
-                                      reading.vitalSigns.heartRate.value, 1)));
+  // Heart Rate
+  Values::MapValue hrMap(
+      "value", Values::DoubleValue(reading.vitalSigns.heartRate.value));
   Values::MapValue hrAlert("status",
                            Values::StringValue(alertStatusToString(
                                reading.vitalSigns.heartRate.alert.status)));
@@ -65,9 +27,9 @@ void uploadDeviceReading(const DeviceReading &reading,
       Values::IntegerValue(reading.vitalSigns.heartRate.alert.criticalCount));
   hrMap.add("alert", Values::Value(hrAlert));
 
-  // Vital Signs - SpO2
-  Values::MapValue spo2Map(
-      "value", Values::DoubleValue(number_t(reading.vitalSigns.spo2.value, 1)));
+  // SpO2
+  Values::MapValue spo2Map("value",
+                           Values::DoubleValue(reading.vitalSigns.spo2.value));
   Values::MapValue spo2Alert(
       "status", Values::StringValue(
                     alertStatusToString(reading.vitalSigns.spo2.alert.status)));
@@ -79,9 +41,9 @@ void uploadDeviceReading(const DeviceReading &reading,
       Values::IntegerValue(reading.vitalSigns.spo2.alert.criticalCount));
   spo2Map.add("alert", Values::Value(spo2Alert));
 
-  // Vital Signs - Body Temperature
-  Values::MapValue tempMap("value", Values::DoubleValue(number_t(
-                                        reading.vitalSigns.bodyTemp.value, 1)));
+  // Body Temperature
+  Values::MapValue tempMap(
+      "value", Values::DoubleValue(reading.vitalSigns.bodyTemp.value));
   Values::MapValue tempAlert("status",
                              Values::StringValue(alertStatusToString(
                                  reading.vitalSigns.bodyTemp.alert.status)));
@@ -99,30 +61,13 @@ void uploadDeviceReading(const DeviceReading &reading,
   vitalSigns.add("bodyTemp", Values::Value(tempMap));
   doc.add("vitalSigns", Values::Value(vitalSigns));
 
-  // Metadata
-  doc.add("patientId", Values::Value(Values::StringValue(patientId)));
-  doc.add("measurementType",
-          Values::Value(Values::StringValue("continuous_monitoring")));
-  doc.add("dataQuality", Values::Value(Values::StringValue("good")));
-
-  // Determine overall alert status
-  AlertStatus overallStatus = determineOverallAlertStatus(reading.vitalSigns);
-  doc.add("alertStatus", Values::Value(Values::StringValue(
-                             alertStatusToString(overallStatus))));
-
-  // Upload path: patients/{patientId}/readings/{readingId}
-  String path = "patients/" + patientId + "/readings/" + reading.id;
-
-  Serial.printf("📤 Uploading reading to: %s\n", path.c_str());
-  Docs.createDocument(aClient, Firestore::Parent(FIREBASE_PROJECT_ID), path,
-                      DocumentMask(), doc, firestoreResult);
+  return doc;
 }
 
-// Upload patient record
-void uploadPatientRecord(const PatientRecord &patient) {
+Document<Values::Value> createPatientDocument(const PatientRecord &patient) {
   Document<Values::Value> doc;
 
-  // Basic patient info
+  // Basic info
   doc.add("id", Values::Value(Values::StringValue(patient.id)));
   doc.add("name", Values::Value(Values::StringValue(patient.name)));
   doc.add("age", Values::Value(Values::IntegerValue(patient.age)));
@@ -136,7 +81,7 @@ void uploadPatientRecord(const PatientRecord &patient) {
   doc.add("condition", Values::Value(Values::StringValue(
                            patientConditionToString(patient.condition))));
 
-  // Contact information
+  // Contact info
   Values::MapValue contact("phone",
                            Values::StringValue(patient.contactInfo.phone));
   contact.add("email", Values::StringValue(patient.contactInfo.email));
@@ -158,43 +103,29 @@ void uploadPatientRecord(const PatientRecord &patient) {
           Values::Value(Values::StringValue(
               monitoringStatusToString(patient.monitoringStatus))));
 
-  // Assigned devices array - Initialize properly based on mobizt/FirebaseClient
-  // library
-  if (patient.assignedDevices.size() > 0) {
-    Values::ArrayValue devices(
-        Values::Value(Values::StringValue(patient.assignedDevices[0])));
-    // Add remaining devices if any
-    for (size_t i = 1; i < patient.assignedDevices.size(); i++) {
-      devices.add(
-          Values::Value(Values::StringValue(patient.assignedDevices[i])));
-    }
-    doc.add("assignedDevices", Values::Value(devices));
-  } else {
-    // Handle empty array case
-    Values::ArrayValue devices(Values::Value(Values::StringValue("")));
-    devices.clear();
-    doc.add("assignedDevices", Values::Value(devices));
+  // Assigned devices - simplified approach
+  Values::ArrayValue devices(Values::Value(Values::StringValue(
+      patient.assignedDevices.empty() ? "none" : patient.assignedDevices[0])));
+  for (size_t i = 1; i < patient.assignedDevices.size(); i++) {
+    devices.add(Values::Value(Values::StringValue(patient.assignedDevices[i])));
   }
+  doc.add("assignedDevices", Values::Value(devices));
 
   // Timestamps
   doc.add("createdAt", Values::Value(Values::StringValue(patient.createdAt)));
   doc.add("updatedAt", Values::Value(Values::StringValue(patient.updatedAt)));
 
-  String path = "patients/" + patient.id;
-  Serial.printf("📤 Uploading patient record: %s\n", path.c_str());
-  Docs.createDocument(aClient, Firestore::Parent(FIREBASE_PROJECT_ID), path,
-                      DocumentMask(), doc, firestoreResult);
+  return doc;
 }
 
-// Upload device status
-void uploadDeviceStatus(const Device &device) {
+Document<Values::Value> createDeviceDocument(const Device &device) {
   Document<Values::Value> doc;
 
   doc.add("id", Values::Value(Values::StringValue(device.id)));
   doc.add("deviceStatus", Values::Value(Values::StringValue(
                               deviceStatusToString(device.deviceStatus))));
 
-  // Location info
+  // Location
   Values::MapValue location("roomNumber",
                             Values::StringValue(device.location.roomNumber));
   location.add("bedNumber", Values::StringValue(device.location.bedNumber));
@@ -203,14 +134,10 @@ void uploadDeviceStatus(const Device &device) {
   doc.add("lastUpdate",
           Values::Value(Values::StringValue(getCurrentTimestamp())));
 
-  String path = "devices/" + device.id;
-  Serial.printf("📤 Uploading device status: %s\n", path.c_str());
-  Docs.createDocument(aClient, Firestore::Parent(FIREBASE_PROJECT_ID), path,
-                      DocumentMask(), doc, firestoreResult);
+  return doc;
 }
 
-// Upload alert summary
-void uploadAlertSummary(const AlertSummary &alert) {
+Document<Values::Value> createAlertDocument(const AlertSummary &alert) {
   Document<Values::Value> doc;
 
   doc.add("patientName", Values::Value(Values::StringValue(alert.patientName)));
@@ -230,16 +157,13 @@ void uploadAlertSummary(const AlertSummary &alert) {
                                    alert.activeAlerts.bodyTemp)));
   doc.add("activeAlerts", Values::Value(activeAlerts));
 
-  String alertId = "alert_" + String(millis());
-  String path = "alerts/" + alertId;
+  doc.add("timestamp",
+          Values::Value(Values::StringValue(getCurrentTimestamp())));
 
-  Serial.printf("🚨 Uploading alert: %s\n", path.c_str());
-  Docs.createDocument(aClient, Firestore::Parent(FIREBASE_PROJECT_ID), path,
-                      DocumentMask(), doc, firestoreResult);
+  return doc;
 }
 
-// Update room status
-void updateRoomStatus(const String &roomNumber, const RoomStatus &status) {
+Document<Values::Value> createRoomDocument(const RoomStatus &status) {
   Document<Values::Value> doc;
 
   doc.add("roomNumber", Values::Value(Values::StringValue(status.roomNumber)));
@@ -254,8 +178,5 @@ void updateRoomStatus(const String &roomNumber, const RoomStatus &status) {
   doc.add("lastUpdate",
           Values::Value(Values::StringValue(getCurrentTimestamp())));
 
-  String path = "rooms/" + roomNumber;
-  Serial.printf("🏥 Updating room status: %s\n", path.c_str());
-  Docs.createDocument(aClient, Firestore::Parent(FIREBASE_PROJECT_ID), path,
-                      DocumentMask(), doc, firestoreResult);
+  return doc;
 }

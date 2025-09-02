@@ -91,6 +91,8 @@ void uploadAlertData(const DeviceReading &reading, AlertStatus alertLevel) {
 
   alert.lastAlertTime = reading.timestamp;
   alert.severity = (alertLevel == AlertStatus::CRITICAL) ? "high" : "medium";
+
+  uploadAlert(alert);
 }
 
 void generateAndUploadVitals() {
@@ -119,13 +121,14 @@ void generateAndUploadVitals() {
     uploadAlertData(reading, overallAlert);
   }
 
-  // Upload the vital reading
+  uploadVitalReading(reading, patientId);
 }
 
 void updatePatientData() {
   Serial.println("📋 Updating patient record...");
   PatientRecord patient = createSamplePatient();
   patient.updatedAt = getCurrentTimestamp();
+  uploadPatientRecord(patient);
 }
 
 void updateDeviceAndRoomStatus() {
@@ -141,6 +144,22 @@ void updateDeviceAndRoomStatus() {
   roomStatus.deviceCount = 1;
   roomStatus.activeAlerts = 0;  // Would be calculated from recent readings
   roomStatus.totalReadings = 0; // Would be calculated from database
+
+  updateRoomStatus(roomNumber, roomStatus);
+}
+
+void uploadInitialData() {
+  Serial.println("📤 Uploading initial patient data...");
+
+  // Create sample patient record
+  PatientRecord patient = createSamplePatient();
+  uploadPatientRecord(patient);
+
+  // Create sample device record
+  Device device = createSampleDevice();
+  uploadDeviceStatus(device);
+
+  Serial.println("✅ Initial data upload completed");
 }
 
 void setup() {
@@ -155,48 +174,56 @@ void setup() {
   initFirebase();
 
   // Initialize vitals generation
-  // randomSeed(analogRead(0));
+  randomSeed(analogRead(0));
 
   // // Display configuration
-  // Serial.println("\n📋 Configuration:");
-  // Serial.println("   Device: " + deviceId);
-  // Serial.println("   Patient: " + patientId);
-  // Serial.println("   Location: Room " + roomNumber + ", Bed " + bedNumber);
-  // Serial.println("   Reading Interval: " + String(READING_INTERVAL / 1000) +
-  //                "s");
-  // Serial.println();
+  Serial.println("\n📋 Configuration:");
+  Serial.println("   Device: " + deviceId);
+  Serial.println("   Patient: " + patientId);
+  Serial.println("   Location: Room " + roomNumber + ", Bed " + bedNumber);
+  Serial.println("   Reading Interval: " + String(READING_INTERVAL / 1000) +
+                 "s");
+  Serial.println();
 
   // Upload initial patient data
-  // uploadInitialData();
+  uploadInitialData();
 }
 
 void loop() {
   app.loop();
 
   if (app.ready()) {
-  }
-  // Process Firebase operations (CRITICAL!)
+    if (!systemReady) {
+      systemReady = true;
+      Serial.println("🚀 System ready!");
+    }
+  } else {
+    if (systemReady) {
+      systemReady = false;
+      Serial.println("⚠️ Firebase disconnected!");
+    }
+  } // Process Firebase operations (CRITICAL!)
 
   // Check WiFi connection
   checKWiFiConnection();
 
-  // // Generate and upload vital readings
-  // if (millis() - lastReadingTime >= READING_INTERVAL) {
-  //   lastReadingTime = millis();
-  //   generateAndUploadVitals();
-  // }
-  //
-  // // Update patient record periodically
-  // if (millis() - lastPatientUpdate >= PATIENT_UPDATE_INTERVAL) {
-  //   lastPatientUpdate = millis();
-  //   updatePatientData();
-  // }
-  //
-  // // Update device status periodically
-  // if (millis() - lastStatusUpdate >= STATUS_UPDATE_INTERVAL) {
-  //   lastStatusUpdate = millis();
-  //   updateDeviceAndRoomStatus();
-  // }
+  // Generate and upload vital readings
+  if (millis() - lastReadingTime >= READING_INTERVAL) {
+    lastReadingTime = millis();
+    generateAndUploadVitals();
+  }
+
+  // Update patient record periodically
+  if (millis() - lastPatientUpdate >= PATIENT_UPDATE_INTERVAL) {
+    lastPatientUpdate = millis();
+    updatePatientData();
+  }
+
+  // Update device status periodically
+  if (millis() - lastStatusUpdate >= STATUS_UPDATE_INTERVAL) {
+    lastStatusUpdate = millis();
+    updateDeviceAndRoomStatus();
+  }
 
   // Small delay for system stability
   delay(100);

@@ -12,6 +12,7 @@
 extern FirebaseApp app;
 extern UserAuth user_auth;
 extern WiFiClientSecure ssl_client;
+extern AsyncClientClass aClient;
 
 // Firestore
 extern AsyncResult firestoreResult;

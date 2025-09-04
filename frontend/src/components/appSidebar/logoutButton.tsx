@@ -9,7 +9,7 @@ export default function LogoutButton() {
     <Button
       variant={"destructive"}
       onClick={() => firebaseSignOut()}
-      className="group/logout active:text-destructive-foreground outline-bl hover:text-destructive-foreground outline hover:cursor-pointer hover:bg-destructive/90 active:bg-destructive"
+      className="group/logout active:text-destructive-foreground outline-bl hover:text-destructive-foreground w-full outline hover:cursor-pointer hover:bg-destructive/90 active:bg-destructive"
     >
       <span>Logout</span>
       <LogOut className="transition-all duration-100 group-hover/logout:translate-x-2" />

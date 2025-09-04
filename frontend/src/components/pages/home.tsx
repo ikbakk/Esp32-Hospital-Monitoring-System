@@ -3,6 +3,11 @@
 import { useState } from "react";
 import PatientCard from "@/components/patientCard";
 import type { Patient } from "@/types/PatientCard";
+import {
+  getPatient,
+  getPatientsList,
+  usePatients,
+} from "@/hooks/queries/patientQueries";
 
 interface HomePageProps {
   mockPatients: Patient[];
@@ -15,6 +20,11 @@ export default function HomePage({ mockPatients }: HomePageProps) {
       patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       patient.roomNumber.toLowerCase().includes(searchTerm.toLowerCase()),
   );
+
+  // const { data } = usePatients("patient_001");
+  // const { data } = getPatientsList();
+  // const { data } = getPatient("patient_001");
+  // console.log(data);
 
   return (
     <>

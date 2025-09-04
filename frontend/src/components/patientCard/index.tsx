@@ -85,7 +85,7 @@ const PatientCard = ({ patient }: { patient: Patient }) => {
         <div className="flex items-center justify-between text-xs text-gray-500 bg-gray-50 p-2 rounded">
           <div className="flex items-center gap-1">
             <Clock className="w-3 h-3" />
-            <span>Last updated: {new Date().toLocaleTimeString()}</span>
+            {/* <span>Last updated: {new Date().toLocaleTimeString()}</span> */}
           </div>
           <Link href={`/patient/${patient.id}/details`}>
             <Button

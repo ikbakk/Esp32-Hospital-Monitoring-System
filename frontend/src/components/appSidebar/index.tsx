@@ -1,7 +1,8 @@
-import { Calendar, Home } from "lucide-react";
+import { Calendar, Home, LogOut } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
+  SidebarGroup,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -10,6 +11,9 @@ import {
 import { SidebarSearchForm } from "../sidebarSearchForm";
 import PagesList from "./pagesList";
 import WardStatus from "./wardStatus";
+import { Button } from "../ui/button";
+import { firebaseSignOut } from "@/lib/firebaseAuth";
+import LogoutButton from "./logoutButton";
 
 const pagesList = [
   {
@@ -37,7 +41,7 @@ export function AppSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
-              <span className="font-bold text-lg">Hospital Ward Monitor</span>
+              <span className="text-lg font-bold">Hospital Ward Monitor</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
@@ -47,6 +51,16 @@ export function AppSidebar() {
       <SidebarContent>
         <WardStatus patientCount={patientCount} />
         <PagesList pages={pagesList} />
+
+        <SidebarMenu className="mt-auto">
+          <SidebarGroup>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <LogoutButton />
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarGroup>
+        </SidebarMenu>
       </SidebarContent>
     </Sidebar>
   );

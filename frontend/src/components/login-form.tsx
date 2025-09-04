@@ -1,19 +1,57 @@
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+"use client";
+
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import * as yup from "yup";
+import { yupResolver } from "@hookform/resolvers/yup";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useForm } from "react-hook-form";
+import { isFirebaseAuthenticated } from "@/lib/firebaseAuth";
+import { useRouter } from "next/navigation";
+
+interface FormInputs {
+  email: string;
+  password: string;
+}
+
+const schema = yup.object({
+  email: yup.string().email().required(),
+  password: yup.string().required(),
+});
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const router = useRouter();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormInputs>({
+    resolver: yupResolver(schema),
+  });
+
+  const onSubmit = async (data: FormInputs) => {
+    try {
+      const isAuthenticated = await isFirebaseAuthenticated(data);
+      if (isAuthenticated) {
+        router.push("/");
+      }
+    } catch (error) {
+      console.error("Sign in error:", error);
+      alert("Wrong email or password");
+    }
+  };
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
@@ -24,15 +62,20 @@ export function LoginForm({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form>
+          <form onSubmit={handleSubmit(onSubmit)}>
             <div className="flex flex-col gap-6">
               <div className="grid gap-3">
                 <Label htmlFor="email">Email</Label>
+                {errors.email && (
+                  <span className="text-red-600/80 text-xs capitalize">
+                    {errors.email.message}
+                  </span>
+                )}
                 <Input
-                  id="email"
-                  type="email"
-                  placeholder="m@example.com"
-                  required
+                  placeholder="Email"
+                  {...register("email", {
+                    required: true,
+                  })}
                 />
               </div>
               <div className="grid gap-3">
@@ -45,26 +88,26 @@ export function LoginForm({
                     Forgot your password?
                   </a>
                 </div>
-                <Input id="password" type="password" required />
+                {errors.password && (
+                  <span className="text-red-600/80 text-xs capitalize">
+                    {errors.password.message}
+                  </span>
+                )}
+                <Input
+                  type="password"
+                  placeholder="Password"
+                  {...register("password", { required: true })}
+                />
               </div>
               <div className="flex flex-col gap-3">
-                <Button type="submit" className="w-full">
+                <Button type="submit" className="w-full hover:cursor-pointer">
                   Login
                 </Button>
-                <Button variant="outline" className="w-full">
-                  Login with Google
-                </Button>
               </div>
-            </div>
-            <div className="mt-4 text-center text-sm">
-              Don&apos;t have an account?{" "}
-              <a href="#" className="underline underline-offset-4">
-                Sign up
-              </a>
             </div>
           </form>
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

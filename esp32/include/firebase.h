@@ -32,8 +32,8 @@ void processFirestoreResults();
 void uploadVitalReading(const DeviceReading &reading, const String &patientId);
 void uploadPatientRecord(const PatientRecord &patient);
 void uploadDeviceStatus(const Device &device);
-void uploadAlert(const AlertSummary &alert);
-void updateRoomStatus(const String &roomNumber, const RoomStatus &status);
+void uploadPatientWithReading(const PatientRecord &patient,
+                              const DeviceReading &reading);
 
 // Builders
 Document<Values::Value> createReadingDocument(const DeviceReading &reading,

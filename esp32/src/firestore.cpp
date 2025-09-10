@@ -1,3 +1,4 @@
+#include "types.h"
 #include <config.h>
 #include <firebase.h>
 
@@ -39,6 +40,27 @@ void processFirestoreResults() {
   }
 }
 
+void uploadPatientWithReading(const PatientRecord &patient,
+                              const DeviceReading &reading) {
+  String patientPath = "patients/" + patient.id;
+  String readingPath = patientPath + "/readings/" + reading.id;
+  Document<Values::Value> patientDocument = createPatientDocument(patient);
+  Document<Values::Value> readingDocument =
+      createReadingDocument(reading, patient.id);
+  Firestore::Parent parent = Firestore::Parent(FIREBASE_PROJECT_ID);
+
+  if (!isFirebaseReady()) {
+    Serial.printf("📤 Uploading patient: %s\n", patient.id.c_str());
+  } else {
+    Docs.createDocument(aClient, parent, patientPath, DocumentMask(),
+                        patientDocument, firestoreResult);
+    Docs.createDocument(aClient, parent, readingPath, DocumentMask(),
+                        readingDocument, firestoreResult);
+
+    Serial.printf("📤 Uploaded patient: %s\n", patient.id.c_str());
+  }
+}
+
 // Upload vital reading to Firestore
 void uploadVitalReading(const DeviceReading &reading, const String &patientId) {
   if (!isFirebaseReady())
@@ -61,47 +83,6 @@ void uploadPatientRecord(const PatientRecord &patient) {
   String path = "patients/" + patient.id;
 
   Serial.printf("📤 Uploading patient: %s\n", path.c_str());
-  Docs.createDocument(aClient, Firestore::Parent(FIREBASE_PROJECT_ID), path,
-                      DocumentMask(), doc, firestoreResult);
-}
-
-// Upload device status
-void uploadDeviceStatus(const Device &device) {
-  if (!isFirebaseReady()) {
-    Serial.println("⚠️ Firebase not ready - cannot upload device status");
-  }
-
-  Document<Values::Value> doc = createDeviceDocument(device);
-  String path = "devices/" + device.id;
-
-  Serial.printf("📤 Uploading device: %s\n", path.c_str());
-  Docs.createDocument(aClient, Firestore::Parent(FIREBASE_PROJECT_ID), path,
-                      DocumentMask(), doc, firestoreResult);
-}
-
-// Upload alert
-void uploadAlert(const AlertSummary &alert) {
-  if (!isFirebaseReady())
-    return;
-
-  Document<Values::Value> doc = createAlertDocument(alert);
-  String alertId = "alert_" + String(millis()) + "_" + alert.roomNumber;
-  String path = "alerts/" + alertId;
-
-  Serial.printf("🚨 Uploading alert: %s\n", path.c_str());
-  Docs.createDocument(aClient, Firestore::Parent(FIREBASE_PROJECT_ID), path,
-                      DocumentMask(), doc, firestoreResult);
-}
-
-// Update room status
-void updateRoomStatus(const String &roomNumber, const RoomStatus &status) {
-  if (!isFirebaseReady())
-    return;
-
-  Document<Values::Value> doc = createRoomDocument(status);
-  String path = "rooms/" + roomNumber;
-
-  Serial.printf("🏥 Updating room: %s\n", path.c_str());
   Docs.createDocument(aClient, Firestore::Parent(FIREBASE_PROJECT_ID), path,
                       DocumentMask(), doc, firestoreResult);
 }

@@ -63,9 +63,9 @@ struct VitalSign {
 
 // Complete vital signs structure
 struct VitalSigns {
-  VitalSign heartRate;
-  VitalSign spo2;
-  VitalSign bodyTemp;
+  float heartRate;
+  float spo2;
+  float bodyTemp;
 };
 
 // Device location

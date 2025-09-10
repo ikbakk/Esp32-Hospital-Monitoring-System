@@ -82,24 +82,11 @@ DeviceReading generateEnhancedVitals(const String &deviceId,
   float temp = round(generateRealisticValue(36.1, 37.2, lastTemp) * 10) / 10.0;
 
   // Create vital signs with alerts
-  reading.vitalSigns.heartRate.value = hr;
-  reading.vitalSigns.heartRate.alert =
-      checkVitalAlert(hr, vitalThresholds.heartRate.warningLow,
-                      vitalThresholds.heartRate.warningHigh,
-                      vitalThresholds.heartRate.criticalLow,
-                      vitalThresholds.heartRate.criticalHigh);
+  reading.vitalSigns.heartRate = hr;
 
-  reading.vitalSigns.spo2.value = spo2;
-  reading.vitalSigns.spo2.alert =
-      checkVitalAlert(spo2, vitalThresholds.spo2.warningLow, 100.0,
-                      vitalThresholds.spo2.criticalLow, 100.0);
+  reading.vitalSigns.spo2 = spo2;
 
-  reading.vitalSigns.bodyTemp.value = temp;
-  reading.vitalSigns.bodyTemp.alert =
-      checkVitalAlert(temp, vitalThresholds.bodyTemp.warningLow,
-                      vitalThresholds.bodyTemp.warningHigh,
-                      vitalThresholds.bodyTemp.criticalLow,
-                      vitalThresholds.bodyTemp.criticalHigh);
+  reading.vitalSigns.bodyTemp = temp;
 
   // Set metadata
   reading.id = "reading_" + String(++reading_sequence) + "_" + String(millis());
@@ -114,23 +101,6 @@ DeviceReading generateEnhancedVitals(const String &deviceId,
   return reading;
 }
 
-// Determine overall alert status from vital signs
-AlertStatus determineOverallAlertStatus(const VitalSigns &vitals) {
-  if (vitals.heartRate.alert.status == AlertStatus::CRITICAL ||
-      vitals.spo2.alert.status == AlertStatus::CRITICAL ||
-      vitals.bodyTemp.alert.status == AlertStatus::CRITICAL) {
-    return AlertStatus::CRITICAL;
-  }
-
-  if (vitals.heartRate.alert.status == AlertStatus::WARNING ||
-      vitals.spo2.alert.status == AlertStatus::WARNING ||
-      vitals.bodyTemp.alert.status == AlertStatus::WARNING) {
-    return AlertStatus::WARNING;
-  }
-
-  return AlertStatus::NONE;
-}
-
 // Convert legacy PatientVitals to new DeviceReading
 DeviceReading PatientVitals::toDeviceReading() const {
   DeviceReading reading;
@@ -140,24 +110,24 @@ DeviceReading PatientVitals::toDeviceReading() const {
   reading.deviceId = deviceId;
 
   // Convert simple values to enhanced structure
-  reading.vitalSigns.heartRate.value = heartRate;
-  reading.vitalSigns.heartRate.alert =
-      checkVitalAlert(heartRate, vitalThresholds.heartRate.warningLow,
-                      vitalThresholds.heartRate.warningHigh,
-                      vitalThresholds.heartRate.criticalLow,
-                      vitalThresholds.heartRate.criticalHigh);
+  reading.vitalSigns.heartRate = heartRate;
+  reading.vitalSigns.heartRate =
 
-  reading.vitalSigns.spo2.value = spo2;
-  reading.vitalSigns.spo2.alert =
-      checkVitalAlert(spo2, vitalThresholds.spo2.warningLow, 100.0,
-                      vitalThresholds.spo2.criticalLow, 100.0);
+      reading.vitalSigns.spo2 = spo2;
 
-  reading.vitalSigns.bodyTemp.value = bodyTemp;
-  reading.vitalSigns.bodyTemp.alert =
-      checkVitalAlert(bodyTemp, vitalThresholds.bodyTemp.warningLow,
-                      vitalThresholds.bodyTemp.warningHigh,
-                      vitalThresholds.bodyTemp.criticalLow,
-                      vitalThresholds.bodyTemp.criticalHigh);
+  reading.vitalSigns.bodyTemp = bodyTemp;
+
+  return reading;
+}
+
+DeviceReading generateRandomReading(const String &patientId) {
+  DeviceReading reading;
+
+  reading.id = String(random(100000, 999999));
+  reading.timestamp = String(millis()); // or use RTC/ISO8601
+  reading.vitalSigns.heartRate = random(60, 100);
+  reading.vitalSigns.spo2 = random(94, 100);
+  reading.vitalSigns.bodyTemp = random(360, 375) / 10.0;
 
   return reading;
 }

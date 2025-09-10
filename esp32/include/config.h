@@ -1,4 +1,3 @@
-// include/config.h - Updated configuration for medical monitoring system
 #ifndef CONFIG_H
 #define CONFIG_H
 

@@ -6,7 +6,7 @@ CompileFlags:
     - -I./lib
     - -DBOARD_HAS_PSRAM
     - -mfix-esp32-psram-cache-issue
-  CompilationDatabase: .
+  CompilationDatabase: ./compile_commands.json
 
 Index:
   Background: Build

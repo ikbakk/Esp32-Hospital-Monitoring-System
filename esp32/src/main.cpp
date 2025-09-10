@@ -25,97 +25,42 @@ const unsigned long DEVICE_UPDATE_INTERVAL = 60000;   // 1 minute
 const unsigned long ROOM_UPDATE_INTERVAL = 120000;    // 2 minutes
 
 // System status
-bool systemReady = false;
 bool initialDataUploaded = false;
 
 void setup() {
   Serial.begin(115200);
-  Serial.println(
-      "\n🏥 MEDICAL MONITORING SYSTEM v2.0 - COMPLETE FIRESTORE EDITION");
-  Serial.println(
-      "================================================================");
-
-  // Connect to WiFi
   connectToWiFi();
-
-  // Initialize Firebase
   initFirebase();
-
-  // Initialize vitals generation
   randomSeed(analogRead(0));
-
-  // Display configuration
-  Serial.println("\n📋 SYSTEM CONFIGURATION:");
-  Serial.println("========================");
-  Serial.println("   Device: " + deviceId);
-  Serial.println("   Patient: " + patientId);
-  Serial.println("   Location: Room " + roomNumber + ", Bed " + bedNumber);
-  Serial.println("   Reading Interval: " + String(READING_INTERVAL / 1000) +
-                 "s");
-  Serial.println(
-      "   Patient Update: " + String(PATIENT_UPDATE_INTERVAL / 1000) + "s");
-  Serial.println("   Device Update: " + String(DEVICE_UPDATE_INTERVAL / 1000) +
-                 "s");
-  Serial.println("   Room Update: " + String(ROOM_UPDATE_INTERVAL / 1000) +
-                 "s");
-  Serial.println();
-
-  // Upload all initial data to create complete Firestore structure
   uploadInitialData();
-
-  Serial.println("\n🚀 SYSTEM READY FOR CONTINUOUS MONITORING");
-  Serial.println("=========================================");
 }
 
 void loop() {
-  // Process Firebase operations (CRITICAL!)
   app.loop();
-
-  if (app.ready()) {
-    if (!systemReady) {
-      systemReady = true;
-      Serial.println("🟢 System ready - All uploads active!");
-    }
-  } else {
-    if (systemReady) {
-      systemReady = false;
-      Serial.println("🔴 Firebase disconnected - Uploads paused!");
-    }
-  }
-
-  // Check WiFi connection
   checKWiFiConnection();
+  if (app.ready()) {
 
-  // Only proceed with uploads if system is ready
-  if (systemReady) {
-
-    // 1. Generate and upload vital readings every 30 seconds
     if (millis() - lastReadingTime >= READING_INTERVAL) {
       lastReadingTime = millis();
       Serial.printf("🕒 VITAL SIGNS CYCLE - %s\n",
                     getCurrentTimestamp().c_str());
-      generateAndUploadVitals();
+      uploadPatientWithReading(createSamplePatient(),
+                               generateRandomReading(patientId));
     }
+
+    // 1. Generate and upload vital readings every 30 seconds
+    // if (millis() - lastReadingTime >= READING_INTERVAL) {
+    //   lastReadingTime = millis();
+    //   Serial.printf("🕒 VITAL SIGNS CYCLE - %s\n",
+    //                 getCurrentTimestamp().c_str());
+    //   generateAndUploadVitals();
+    // }
 
     // 2. Update complete patient record every 5 minutes
     if (millis() - lastPatientUpdate >= PATIENT_UPDATE_INTERVAL) {
       lastPatientUpdate = millis();
       Serial.println("📋 PATIENT RECORD UPDATE CYCLE");
       uploadCompletePatientRecord();
-    }
-
-    // 3. Update device status every 1 minute
-    if (millis() - lastDeviceUpdate >= DEVICE_UPDATE_INTERVAL) {
-      lastDeviceUpdate = millis();
-      Serial.println("🔧 DEVICE STATUS UPDATE CYCLE");
-      uploadCompleteDeviceStatus();
-    }
-
-    // 4. Update room status every 2 minutes
-    if (millis() - lastRoomUpdate >= ROOM_UPDATE_INTERVAL) {
-      lastRoomUpdate = millis();
-      Serial.println("🏥 ROOM STATUS UPDATE CYCLE");
-      uploadCompleteRoomStatus();
     }
 
   } else {

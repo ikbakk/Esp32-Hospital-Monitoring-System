@@ -44,7 +44,7 @@ void uploadCompleteDeviceStatus() {
                 device.location.roomNumber.c_str(),
                 device.location.bedNumber.c_str());
 
-  uploadDeviceStatus(device);
+  // uploadDeviceStatus(device);
   delay(100);
   processFirestoreResults();
 }
@@ -92,7 +92,6 @@ void uploadCompleteRoomStatus() {
   Serial.printf("   - Device Count: %d\n", roomStatus.deviceCount);
   Serial.printf("   - Active Alerts: %d\n", roomStatus.activeAlerts);
 
-  updateRoomStatus(roomNumber, roomStatus);
   delay(100);
   processFirestoreResults();
 }

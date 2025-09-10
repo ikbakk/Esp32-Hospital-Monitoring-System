@@ -45,6 +45,7 @@ String getCurrentTimestamp();
 VitalAlert checkVitalAlert(float value, float warningLow, float warningHigh,
                            float criticalLow, float criticalHigh);
 AlertStatus determineOverallAlertStatus(const VitalSigns &vitals);
+DeviceReading generateRandomReading(const String &patientId);
 
 // Global thresholds (can be configured)
 extern VitalThresholds vitalThresholds;

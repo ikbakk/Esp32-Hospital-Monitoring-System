@@ -8,14 +8,14 @@
 #define QUEUE_LENGTH 10
 #define QUEUE_ITEM_SIZE sizeof(DeviceReading)
 
-#define WIFI_SSID "Loto2"
-#define WIFI_PASSWORD "LotoWifi2"
+#define WIFI_SSID ""
+#define WIFI_PASSWORD ""
 #define WIFI_TIMEOUT_MS 30000
 
-#define API_KEY "AIzaSyABA5ZxXkbk8ea3uyZwu8VHAuBxThojGOY"
-#define USER_EMAIL "iqbalfirdaus05@gmail.com"
-#define USER_PASSWORD "LotoFirebase12"
-#define FIREBASE_PROJECT_ID "ward-monitor"
+#define API_KEY ""
+#define USER_EMAIL ""
+#define USER_PASSWORD ""
+#define FIREBASE_PROJECT_ID ""
 #define AUTH_EXPIRE_PERIOD 3000
 
 #define VITAL_READING_INTERVAL_MS 1000 // 1 second for testing

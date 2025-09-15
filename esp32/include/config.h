@@ -26,7 +26,14 @@
 #define PATIENT_UPDATE_INTERVAL_MS 300000 // 5 minutes
 #define DEVICE_UPDATE_INTERVAL_MS 60000   // 1 minute
 #define ROOM_UPDATE_INTERVAL_MS 120000    // 2 minutes
-#define ALERT_CHECK_INTERVAL_MS 5000      // 5 seconds
+#define ALERT_CHECK_INTERVAL_MS                                                \
+  5000 // 5 seconds
+       //
+
+extern const String patientId;
+extern const String roomNumber;
+extern const String bedNumber;
+extern const String deviceId;
 
 // ==================== VITAL SIGNS RANGES (Normal) ====================
 struct NormalVitalRanges {

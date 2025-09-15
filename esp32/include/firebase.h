@@ -24,21 +24,15 @@ void initFirebase();
 void forceReAuth();
 bool verifyUser(const String &apiKey, const String &email,
                 const String &password);
+bool ensureFirebaseReady(const String &operation);
 
 // Results
 void processFirestoreResults();
 
 // Upload
-void uploadVitalReading(const DeviceReading &reading, const String &patientId);
-void uploadPatientRecord(const PatientRecord &patient);
-void uploadDeviceStatus(const Device &device);
-void uploadPatientWithReading(const PatientRecord &patient,
-                              const DeviceReading &reading);
+void uploadPatientReadings(const DeviceReading &reading);
+void initialPatientUpload(const PatientRecord &patient);
 
 // Builders
-Document<Values::Value> createReadingDocument(const DeviceReading &reading,
-                                              const String &patientId);
+Document<Values::Value> createReadingDocument(const DeviceReading &reading);
 Document<Values::Value> createPatientDocument(const PatientRecord &patient);
-Document<Values::Value> createDeviceDocument(const Device &device);
-Document<Values::Value> createAlertDocument(const AlertSummary &alert);
-Document<Values::Value> createRoomDocument(const RoomStatus &status);

@@ -30,8 +30,7 @@ void addField(Values::MapValue &map, const String &key, double value) {
   map.add(key, Values::Value(Values::DoubleValue(value)));
 }
 
-Document<Values::Value> createReadingDocument(const DeviceReading &reading,
-                                              const String &patientId) {
+Document<Values::Value> createReadingDocument(const DeviceReading &reading) {
   Document<Values::Value> doc;
 
   // Basic info
@@ -43,46 +42,9 @@ Document<Values::Value> createReadingDocument(const DeviceReading &reading,
   addField(doc, "spo2", reading.vitalSigns.spo2);
   addField(doc, "bodyTemp", reading.vitalSigns.bodyTemp);
 
-  return doc;
-}
-
-Document<Values::Value> createPatientDocument(const PatientRecord &patient) {
-  Document<Values::Value> doc;
-
-  // Basic info
-  addField(doc, "id", patient.id);
-  addField(doc, "name", patient.name);
-  addField(doc, "age", patient.age);
-  addField(doc, "dateOfBirth", patient.dateOfBirth);
-  addField(doc, "gender", patient.gender);
-  addField(doc, "roomNumber", patient.roomNumber);
-  addField(doc, "bedNumber", patient.bedNumber);
-  addField(doc, "admissionDate", patient.admissionDate);
-  addField(doc, "condition", patientConditionToString(patient.condition));
-
-  // Contact info
-  addField(doc, "phone", patient.contactInfo.phone);
-  addField(doc, "email", patient.contactInfo.email);
-  addField(doc, "emergencyContact", patient.contactInfo.emergencyContact);
-  addField(doc, "emergencyPhone", patient.contactInfo.emergencyPhone);
-
-  // Medical info
-  addField(doc, "carePlan", patient.carePlan);
-  addField(doc, "attendingPhysician", patient.attendingPhysician);
-  addField(doc, "assignedNurse", patient.assignedNurse);
-  addField(doc, "insurance", patient.insurance);
-  addField(doc, "bloodType", patient.bloodType);
-  addField(doc, "monitoringStatus",
-           monitoringStatusToString(patient.monitoringStatus));
-
-  // Devices
-  addField(doc, "primaryDevice",
-           patient.assignedDevices.empty() ? "none"
-                                           : patient.assignedDevices[0]);
-
-  // Timestamps
-  addField(doc, "createdAt", patient.createdAt);
-  addField(doc, "updatedAt", patient.updatedAt);
+  Serial.println("Hr: " + String(reading.vitalSigns.heartRate));
+  Serial.println("SpO2: " + String(reading.vitalSigns.spo2));
+  Serial.println("Temp: " + String(reading.vitalSigns.bodyTemp));
 
   return doc;
 }

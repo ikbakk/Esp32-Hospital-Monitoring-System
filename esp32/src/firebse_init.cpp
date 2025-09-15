@@ -14,36 +14,40 @@ void initFirebase() {
   ssl_client.setInsecure();
 
   // Verify user
-  Serial.println("Verifying the current user... ");
+  Serial.println("⏳ Verifying the current user... ");
   bool ret = verifyUser(API_KEY, USER_EMAIL, USER_PASSWORD);
   Serial.println(ret ? "✅ User verification successful"
                      : "❌ User verification failed");
-
-  Serial.println("🚀 Initializing app...");
 
   // Initialize Firebase app with auth callback
   initializeApp(aClient, app, getAuth(user_auth));
 
   Serial.println("⏳ Waiting for Firebase to be ready...");
-  int waitCount = 0;
-  while (!app.ready() && waitCount < 30) {
-    delay(1000);
-    waitCount++;
-    Serial.print(".");
-  }
-  Serial.println();
-
-  if (!app.ready()) {
-    Serial.println("❌ Firebase failed to initialize!");
-    Serial.println("   Check your credentials and network connection");
-  } else {
-    Serial.println("✅ Firebase initialized successfully");
-  }
 
   app.getApp<Firestore::Documents>(Docs);
 
   // Auto authenticate
   app.autoAuthenticate(true);
+}
+
+bool ensureFirebaseReady(const String &operation) {
+  int retryCount = 0;
+  const int maxRetries = 3;
+
+  while (retryCount < maxRetries) {
+    if (app.ready()) {
+      return true;
+    }
+
+    Serial.printf("⚠️ Firebase not ready for %s (attempt %d/%d)\n",
+                  operation.c_str(), retryCount + 1, maxRetries);
+    delay(1000);
+    retryCount++;
+  }
+
+  Serial.printf("❌ Firebase failed to become ready for %s\n",
+                operation.c_str());
+  return false;
 }
 
 void forceReAuth() {

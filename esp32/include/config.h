@@ -1,39 +1,54 @@
+
 #ifndef CONFIG_H
 #define CONFIG_H
 
 #include <Arduino.h>
+#include <Preferences.h>
 
-// ==================== WIFI CONFIGURATION ====================
+#define QUEUE_LENGTH 10
+#define QUEUE_ITEM_SIZE sizeof(DeviceReading)
+
 #define WIFI_SSID "Loto2"
 #define WIFI_PASSWORD "LotoWifi2"
 #define WIFI_TIMEOUT_MS 30000
 
-// ==================== FIREBASE CONFIGURATION ====================
-#define API_KEY ""
-#define USER_EMAIL "@gmail.com"
-#define USER_PASSWORD ""
-#define FIREBASE_PROJECT_ID "-monitor"
-#define AUTH_EXPIRE_PERIOD 3000 // seconds (<3600)
+#define API_KEY "AIzaSyABA5ZxXkbk8ea3uyZwu8VHAuBxThojGOY"
+#define USER_EMAIL "iqbalfirdaus05@gmail.com"
+#define USER_PASSWORD "LotoFirebase12"
+#define FIREBASE_PROJECT_ID "ward-monitor"
+#define AUTH_EXPIRE_PERIOD 3000
 
-// ==================== DEVICE CONFIGURATION ====================
-#define DEVICE_ID "esp32_monitor_001"
-#define ROOM_NUMBER "101"
-#define BED_NUMBER "A"
-#define PATIENT_ID "patient_001"
-
-// ==================== TIMING ====================
 #define VITAL_READING_INTERVAL_MS 1000 // 1 second for testing
-
-// ==================== DEBUG ====================
 #define DEBUG_VITALS true
 #define DEBUG_FIREBASE true
 
-// ==================== COLLECTIONS ====================
-#define COLLECTION_READINGS "readings"
+extern Preferences prefs;
+extern bool configLoaded;
 
-// ==================== DEVICE GLOBALS ====================
-extern const String deviceId;
-extern const String roomNumber;
-extern const String patientId;
+// ==================== STRUCTS ====================
+
+struct DeviceConfig {
+  String deviceId;
+  String roomNumber;
+  String bedNumber;
+  String patientId;
+};
+
+// ==================== GLOBAL VARIABLES ====================
+extern DeviceConfig devConfig;
+extern Preferences prefs;
+
+// ==================== SMART SAVE HELPERS ====================
+void saveStringIfChanged(const char *key, const String &value);
+
+// ==================== CONFIG UPDATE FUNCTIONS ====================
+// DeviceConfig
+void updateDeviceId(const String &value);
+void updateRoomNumber(const String &value);
+void updateBedNumber(const String &value);
+void updatePatientId(const String &value);
+
+// ==================== INITIALIZATION ====================
+void loadConfigs();
 
 #endif

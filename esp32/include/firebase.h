@@ -17,7 +17,6 @@ extern Firestore::Parent parent;
 
 // ==================== FUNCTIONS ====================
 void initFirebase();
-bool ensureFirebaseReady();
 void processFirestoreResults();
 void uploadReading(const DeviceReading &reading);
 

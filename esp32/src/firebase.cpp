@@ -1,20 +1,20 @@
-#include <config.h>
+#include "config.h"
 #include <firebase.h>
 #include <utils.h>
 
 // ==================== GLOBALS ====================
 FirebaseApp app;
-UserAuth user_auth(API_KEY, USER_EMAIL, USER_PASSWORD, AUTH_EXPIRE_PERIOD);
 WiFiClientSecure ssl_client;
 AsyncClientClass aClient(ssl_client);
+UserAuth user_auth(API_KEY, USER_EMAIL, USER_PASSWORD, AUTH_EXPIRE_PERIOD);
 AsyncResult firestoreResult;
 Firestore::Documents Docs;
 Firestore::Parent parent = Firestore::Parent(FIREBASE_PROJECT_ID);
 
-const String roomNumber = ROOM_NUMBER;
-const String patientId = PATIENT_ID;
-const String collectionPath =
-    "rooms/" + roomNumber + "/patients/" + patientId + "/readings/";
+String getCollectionPath() {
+  return "rooms/" + devConfig.roomNumber + "/patients/" + devConfig.patientId +
+         "/readings/";
+}
 
 // ==================== INITIALIZATION ====================
 void initFirebase() {
@@ -29,26 +29,6 @@ void initFirebase() {
   app.autoAuthenticate(true);
 
   Serial.println("✅ Firebase initialized");
-}
-
-bool ensureFirebaseReady() {
-  int retryCount = 0;
-  const int maxRetries = 5;
-
-  while (retryCount < maxRetries && !app.ready()) {
-    Serial.printf("⏳ Waiting for Firebase... (%d/%d)\n", retryCount + 1,
-                  maxRetries);
-    delay(1000);
-    retryCount++;
-  }
-
-  if (app.ready()) {
-    Serial.println("✅ Firebase is ready");
-    return true;
-  }
-
-  Serial.println("❌ Firebase failed to become ready");
-  return false;
 }
 
 // ==================== RESULT PROCESSING ====================
@@ -103,13 +83,13 @@ void uploadReading(const DeviceReading &reading) {
     return;
   }
 
-  String path = collectionPath + getTimestamp();
+  String path = getCollectionPath() + getTimestamp();
   Document<Values::Value> doc = createReadingDocument(reading);
 
   Docs.createDocument(aClient, parent, path, DocumentMask(), doc,
                       firestoreResult);
 
-  if (DEBUG_FIREBASE) {
+  if (DEBUG_VITALS) {
     Serial.printf("📤 Uploaded: %s\n", path.c_str());
   }
 }

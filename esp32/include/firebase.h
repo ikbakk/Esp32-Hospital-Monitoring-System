@@ -7,32 +7,23 @@
 #include <WiFiClientSecure.h>
 #include <types.h>
 
-// ==== Globals ====
-// Firebase core
 extern FirebaseApp app;
 extern UserAuth user_auth;
 extern WiFiClientSecure ssl_client;
 extern AsyncClientClass aClient;
-
-// Firestore
 extern AsyncResult firestoreResult;
 extern Firestore::Documents Docs;
+extern Firestore::Parent parent;
 
-// ==== Functions ====
-// Init
+// ==================== FUNCTIONS ====================
 void initFirebase();
-void forceReAuth();
-bool verifyUser(const String &apiKey, const String &email,
-                const String &password);
-bool ensureFirebaseReady(const String &operation);
-
-// Results
+bool ensureFirebaseReady();
 void processFirestoreResults();
+void uploadReading(const DeviceReading &reading);
 
-// Upload
-void uploadPatientReadings(const DeviceReading &reading);
-void initialPatientUpload(const PatientRecord &patient);
-
-// Builders
+// ==================== DOCUMENT HELPERS ====================
+void addField(Document<Values::Value> &doc, const String &key,
+              const String &value);
+void addField(Document<Values::Value> &doc, const String &key, int value);
+void addField(Document<Values::Value> &doc, const String &key, double value);
 Document<Values::Value> createReadingDocument(const DeviceReading &reading);
-Document<Values::Value> createPatientDocument(const PatientRecord &patient);

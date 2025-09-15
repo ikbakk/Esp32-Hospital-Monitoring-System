@@ -10,14 +10,8 @@ struct VitalSigns {
 
 // ==================== DEVICE READING ====================
 struct DeviceReading {
-  String id;
   VitalSigns vitalSigns;
-  String timestamp;
-  String deviceId;
-  String roomNumber;
-  String bedNumber;
 };
 
 // ==================== UTILITY FUNCTIONS ====================
-String getCurrentTimestamp();
 DeviceReading generateRandomReading();

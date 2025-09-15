@@ -9,16 +9,17 @@
 #define WIFI_TIMEOUT_MS 30000
 
 // ==================== FIREBASE CONFIGURATION ====================
-#define API_KEY "AIzaSyABA5ZxXkbk8ea3uyZwu8VHAuBxThojGOY"
-#define USER_EMAIL "iqbalfirdaus05@gmail.com"
-#define USER_PASSWORD "LotoFirebase12"
-#define FIREBASE_PROJECT_ID "ward-monitor"
+#define API_KEY ""
+#define USER_EMAIL "@gmail.com"
+#define USER_PASSWORD ""
+#define FIREBASE_PROJECT_ID "-monitor"
 #define AUTH_EXPIRE_PERIOD 3000 // seconds (<3600)
 
 // ==================== DEVICE CONFIGURATION ====================
 #define DEVICE_ID "esp32_monitor_001"
-#define DEFAULT_ROOM_NUMBER "101"
-#define DEFAULT_BED_NUMBER "A"
+#define ROOM_NUMBER "101"
+#define BED_NUMBER "A"
+#define PATIENT_ID "patient_001"
 
 // ==================== TIMING ====================
 #define VITAL_READING_INTERVAL_MS 1000 // 1 second for testing
@@ -33,4 +34,6 @@
 // ==================== DEVICE GLOBALS ====================
 extern const String deviceId;
 extern const String roomNumber;
-extern const String bedNumber;
+extern const String patientId;
+
+#endif

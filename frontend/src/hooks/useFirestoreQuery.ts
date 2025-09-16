@@ -4,66 +4,59 @@ import {
   UseQueryResult,
 } from "@tanstack/react-query";
 import {
-  getDoc,
-  getDocs,
   onSnapshot,
   CollectionReference,
   DocumentReference,
   Query as FirestoreQuery,
 } from "firebase/firestore";
 import { useEffect } from "react";
-export type FirestoreRef<T> =
-  | DocumentReference<T>
-  | CollectionReference<T>
-  | FirestoreQuery<T>;
 
-export function useFirestoreQuery<T>(
+export function useFirestoreDocument<T>(
   key: string[],
-  ref: DocumentReference<any>,
-): UseQueryResult<T | undefined>;
-
-export function useFirestoreQuery<T>(
-  key: string[],
-  ref: CollectionReference<any> | FirestoreQuery<any>,
-): UseQueryResult<T[]>;
-
-// --- Implementation ---
-export function useFirestoreQuery<T>(key: string[], ref: FirestoreRef<T>) {
+  ref: DocumentReference<T>,
+): UseQueryResult<T | null> {
   const queryClient = useQueryClient();
 
-  const query = useQuery({
+  const query = useQuery<T | null>({
     queryKey: key,
-    queryFn: async () => {
-      if ("id" in ref && "path" in ref && !(ref as any)._query) {
-        // document
-        const snap = await getDoc(ref as DocumentReference<T>);
-        return snap.exists() ? (snap.data() as T) : null;
-      } else {
-        // collection or query
-        const snap = await getDocs(
-          ref as CollectionReference<T> | FirestoreQuery<T>,
-        );
-        return snap.docs.map((d) => d.data() as T);
-      }
-    },
+    queryFn: async () => null,
+    enabled: false,
     staleTime: Infinity,
   });
 
   useEffect(() => {
-    const unsubscribe = onSnapshot(ref as any, (snap: any) => {
-      if (snap.docs) {
-        // collection or query
-        const data = snap.docs.map((d: any) => d.data() as T);
-        queryClient.setQueryData(key, data);
-      } else {
-        // document
-        queryClient.setQueryData(
-          key,
-          snap.exists() ? (snap.data() as T) : null,
-        );
-      }
+    const unsubscribe = onSnapshot(ref, (snap) => {
+      const data = snap.exists() ? (snap.data() as T) : null;
+      queryClient.setQueryData<T | null>(key, (old: T | null | undefined) =>
+        JSON.stringify(old) !== JSON.stringify(data) ? data : (old ?? null),
+      );
     });
+    return unsubscribe;
+  }, [ref, key, queryClient]);
 
+  return query;
+}
+
+export function useFirestoreCollection<T>(
+  key: string[],
+  ref: CollectionReference<T> | FirestoreQuery<T>,
+): UseQueryResult<T[]> {
+  const queryClient = useQueryClient();
+
+  const query = useQuery<T[]>({
+    queryKey: key,
+    queryFn: async () => [],
+    enabled: false,
+    staleTime: Infinity,
+  });
+
+  useEffect(() => {
+    const unsubscribe = onSnapshot(ref, (snap) => {
+      const data = snap.docs.map((d) => d.data() as T);
+      queryClient.setQueryData<T[]>(key, (old: T[] | undefined) =>
+        JSON.stringify(old) !== JSON.stringify(data) ? data : (old ?? []),
+      );
+    });
     return unsubscribe;
   }, [ref, key, queryClient]);
 

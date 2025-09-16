@@ -1,0 +1,16 @@
+CompileFlags:
+  Add:
+    - -I./src
+    - -I./include
+    - -I./src/include
+    - -I./lib
+    - -DBOARD_HAS_PSRAM
+    - -mfix-esp32-psram-cache-issue
+  CompilationDatabase: ./compile_commands.json
+
+Index:
+  Background: Build
+# Diagnostics:
+#   ClangTidy:
+#     Add: [performance-*, readability-*, modernize-*]
+#     Remove: [readability-magic-numbers, readability-uppercase-literal-suffix]

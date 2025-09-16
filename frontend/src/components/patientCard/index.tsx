@@ -1,3 +1,5 @@
+"use client";
+
 import { AlertTriangle, CheckCircle, Clock, XCircle } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -10,6 +12,17 @@ import {
 import type { Patient } from "@/types/PatientCard";
 import PatientCardContent from "./patientCardContent";
 import PatientInfo from "./patientInfo";
+import { getRoomDetails } from "@/hooks/queries/roomQueries";
+import SkeletonText from "../ui/skeleton-text";
+import { getPatient } from "@/hooks/queries/patientQueries";
+
+interface PatientCardProps {
+  roomId: string;
+  patient: Patient & {
+    id: string;
+    name: string;
+  };
+}
 
 const getConditionColor = (condition: string) => {
   switch (condition) {
@@ -49,16 +62,35 @@ export const getAbnormalities = (vitals: Patient["vitals"]) => {
   };
 };
 
-const PatientCard = ({ patient }: { patient: Patient }) => {
+const PatientCard = ({ patient, roomId }: PatientCardProps) => {
+  const { data: roomData } = getRoomDetails(roomId);
+  const { data: patientData } = getPatient(roomId, "Patient_001");
+  console.log(patientData);
+
   return (
     <Card className="max-w w-full-sm border border-gray-800">
       <CardHeader
         className={`${getConditionColor(patient.condition)} text-white p-4`}
       >
         <div className="flex items-center justify-between">
-          <div>
-            <h3 className="font-bold text-lg">{patient.roomNumber}</h3>
-            <p className="text-sm opacity-90">Bed {patient.bedNumber}</p>
+          <div className="flex flex-col gap-1">
+            <h3 className="font-bold text-lg">
+              <SkeletonText
+                loading={!roomData}
+                skeletonClassName="h-8 w-24 rounded-md"
+              >
+                {roomData?.roomNumber}
+              </SkeletonText>
+            </h3>
+
+            <h4 className="text-sm opacity-90">
+              <SkeletonText
+                loading={!roomData}
+                skeletonClassName="h-4 w-20 rounded-md"
+              >
+                {roomData?.bedNumber}
+              </SkeletonText>
+            </h4>
           </div>
           <div className="flex items-center gap-1">
             {getConditionIcon(patient.condition)}
@@ -71,7 +103,11 @@ const PatientCard = ({ patient }: { patient: Patient }) => {
 
       <CardContent className="p-4 space-y-4">
         {/* Patient Info */}
-        <PatientInfo patient={patient} />
+        <PatientInfo
+          name={patientData?.name}
+          age={patientData?.age}
+          admissionDate={patientData?.admissionDate}
+        />
 
         {/* Vital Signs */}
         <PatientCardContent

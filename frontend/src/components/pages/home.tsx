@@ -3,11 +3,8 @@
 import { useState } from "react";
 import PatientCard from "@/components/patientCard";
 import type { Patient } from "@/types/PatientCard";
-import {
-  getPatient,
-  getPatientsList,
-  usePatients,
-} from "@/hooks/queries/patientQueries";
+
+import { getRoomsList } from "@/hooks/queries/roomQueries";
 
 interface HomePageProps {
   mockPatients: Patient[];
@@ -21,16 +18,13 @@ export default function HomePage({ mockPatients }: HomePageProps) {
       patient.roomNumber.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
-  // const { data } = usePatients("patient_001");
-  // const { data } = getPatientsList();
-  // const { data } = getPatient("patient_001");
-  // console.log(data);
+  const { data: roomsList } = getRoomsList();
 
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {filteredPatients.map((patient) => (
-          <PatientCard key={patient.id} patient={patient} />
+          <PatientCard key={patient.id} patient={patient} roomId="Room_001" />
         ))}
       </div>
 

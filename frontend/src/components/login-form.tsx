@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
 import { isFirebaseAuthenticated } from "@/lib/firebaseAuth";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 interface FormInputs {
   email: string;
@@ -39,6 +40,7 @@ export function LoginForm({
   } = useForm<FormInputs>({
     resolver: yupResolver(schema),
   });
+  const [error, setError] = useState<string | null>(null);
 
   const onSubmit = async (data: FormInputs) => {
     try {
@@ -46,9 +48,11 @@ export function LoginForm({
       if (isAuthenticated) {
         router.push("/");
       }
+
+      throw new Error("Invalid email or password");
     } catch (error) {
-      console.error("Sign in error:", error);
-      alert("Wrong email or password");
+      const e = error as Error;
+      setError(e.message);
     }
   };
 
@@ -81,12 +85,12 @@ export function LoginForm({
               <div className="grid gap-3">
                 <div className="flex items-center">
                   <Label htmlFor="password">Password</Label>
-                  <a
-                    href="#"
-                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-                  >
-                    Forgot your password?
-                  </a>
+                  {/* <a */}
+                  {/*   href="#" */}
+                  {/*   className="ml-auto inline-block text-sm underline-offset-4 hover:underline" */}
+                  {/* > */}
+                  {/*   Forgot your password? */}
+                  {/* </a> */}
                 </div>
                 {errors.password && (
                   <span className="text-red-600/80 text-xs capitalize">
@@ -100,6 +104,11 @@ export function LoginForm({
                 />
               </div>
               <div className="flex flex-col gap-3">
+                {error ? (
+                  <span className="text-red-600/80 text-xs capitalize">
+                    {error}
+                  </span>
+                ) : null}
                 <Button type="submit" className="w-full hover:cursor-pointer">
                   Login
                 </Button>

@@ -14,18 +14,12 @@ export const isFirebaseAuthenticated = async ({
     await signInWithEmailAndPassword(auth, email, password);
     return true;
   } catch (error) {
-    console.error("Sign in error:", error);
     return false;
   }
 };
 
 export const firebaseSignOut = async () => {
   try {
-    console.log(auth.currentUser);
     await signOut(auth);
-    console.log("Signed out successfully");
-    console.log(auth.currentUser);
-  } catch (error) {
-    console.error("Sign out error:", error);
-  }
+  } catch (error) {}
 };

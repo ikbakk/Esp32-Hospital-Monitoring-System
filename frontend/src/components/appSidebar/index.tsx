@@ -11,11 +11,10 @@ import {
 import { SidebarSearchForm } from "../sidebarSearchForm";
 import PagesList from "./pagesList";
 import WardStatus from "./wardStatus";
-import { Button } from "../ui/button";
-import { firebaseSignOut } from "@/lib/firebaseAuth";
 import LogoutButton from "./logoutButton";
+import AppSidebarHeader from "./sidebarHeader";
 
-const pagesList = [
+export const pagesList = [
   {
     title: "Home",
     url: "/",
@@ -23,7 +22,7 @@ const pagesList = [
   },
   {
     title: "Patient Records",
-    url: "records",
+    url: "/records",
     icon: Calendar,
   },
 ];
@@ -36,15 +35,9 @@ const patientCount = {
 
 export function AppSidebar() {
   return (
-    <Sidebar>
+    <Sidebar collapsible="icon">
       <SidebarHeader>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild>
-              <span className="text-lg font-bold">Hospital Ward Monitor</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
+        <AppSidebarHeader />
         <SidebarSearchForm />
       </SidebarHeader>
 

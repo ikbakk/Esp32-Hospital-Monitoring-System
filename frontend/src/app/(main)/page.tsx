@@ -70,7 +70,7 @@ const mockPatients: Patient[] = [
 
 export default function Home() {
   return (
-    <div className="flex-1 p-6 space-y-6">
+    <div className="flex-1 space-y-6">
       <div className="mb-6">
         <h2 className="text-2xl font-bold text-gray-900">Patient Monitoring</h2>
         <p className="text-gray-600">

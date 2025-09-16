@@ -1,4 +1,6 @@
 import { AppSidebar } from "@/components/appSidebar";
+import Breadcrumbs from "@/components/breadcrumbs";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 
 export default function MainAppLayout({
   children,
@@ -6,11 +8,12 @@ export default function MainAppLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div>
-      <div className="w-full flex">
-        <AppSidebar />
-        <div className="w-full">{children}</div>
-      </div>
-    </div>
+    <SidebarProvider>
+      <AppSidebar />
+      <main className="w-full flex flex-col gap-2 p-4">
+        <Breadcrumbs />
+        {children}
+      </main>
+    </SidebarProvider>
   );
 }

@@ -1,3 +1,5 @@
+"use client";
+
 import { Search } from "lucide-react";
 
 import { Label } from "@/components/ui/label";
@@ -5,11 +7,13 @@ import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarInput,
+  useSidebar,
 } from "@/components/ui/sidebar";
 
 export function SidebarSearchForm({ ...props }: React.ComponentProps<"form">) {
+  const { state } = useSidebar();
   return (
-    <form {...props}>
+    <form className={state === "expanded" ? "block" : "hidden"} {...props}>
       <SidebarGroup className="py-0">
         <SidebarGroupContent className="relative">
           <Label htmlFor="search" className="sr-only">

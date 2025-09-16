@@ -3,13 +3,22 @@
 Preferences prefs;
 bool configLoaded = false;
 // ==================== GLOBALS ====================
-DeviceConfig devConfig = {"Device_001", "Room_001", "Bed_001", "Patient_001"};
+DeviceConfig devConfig = {"Device_001", "Room_001", "Bed_001", "Patient_001",
+                          false};
 
 // ==================== SMART SAVE HELPERS ====================
 void saveStringIfChanged(const char *key, const String &value) {
   prefs.begin("config", false);
   if (prefs.getString(key, "") != value) {
     prefs.putString(key, value);
+  }
+  prefs.end();
+}
+
+void saveBoolIfChanged(const char *key, bool value) {
+  prefs.begin("config", false);
+  if (prefs.getBool(key, false) != value) {
+    prefs.putBool(key, value);
   }
   prefs.end();
 }
@@ -43,6 +52,13 @@ void updatePatientId(const String &value) {
   }
 }
 
+void updateRoomCreated(bool value) {
+  if (devConfig.roomCreated != value) {
+    devConfig.roomCreated = value;
+    saveBoolIfChanged("roomCreated", value);
+  }
+}
+
 // ==================== LOAD CONFIGS FROM NVS ====================
 void loadConfigs() {
   prefs.begin("config", true);
@@ -51,6 +67,7 @@ void loadConfigs() {
   devConfig.roomNumber = prefs.getString("roomNumber", devConfig.roomNumber);
   devConfig.bedNumber = prefs.getString("bedNumber", devConfig.bedNumber);
   devConfig.patientId = prefs.getString("patientId", devConfig.patientId);
+  devConfig.roomCreated = prefs.getBool("roomCreated", devConfig.roomCreated);
 
   configLoaded = true;
 

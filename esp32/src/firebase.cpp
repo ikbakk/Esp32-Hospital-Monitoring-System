@@ -32,14 +32,14 @@ void initFirebase() {
 }
 
 // ==================== RESULT PROCESSING ====================
-void processFirestoreResults() {
+void processFirestoreResults(String message) {
   if (firestoreResult.isResult()) {
     if (firestoreResult.isError()) {
       Serial.printf("❌ Firestore Error: %s\n",
                     firestoreResult.error().message().c_str());
     } else if (firestoreResult.available()) {
       if (DEBUG_FIREBASE) {
-        Serial.println("✅ Firestore operation completed");
+        Serial.println("✅ Firestore operation completed: " + message);
       }
     }
     firestoreResult.clear(); // IMPORTANT: Clear the result
@@ -76,20 +76,71 @@ Document<Values::Value> createReadingDocument(const DeviceReading &reading) {
   return doc;
 }
 
+Document<Values::Value> createRoomDocument() {
+  Document<Values::Value> doc;
+
+  addField(doc, "id", devConfig.deviceId);
+  addField(doc, "roomNumber", devConfig.roomNumber);
+  addField(doc, "bedNumber", devConfig.bedNumber);
+
+  return doc;
+}
+
 // ==================== UPLOAD FUNCTION ====================
 void uploadReading(const DeviceReading &reading) {
-  if (!app.ready()) {
-    Serial.println("⚠️ Firebase not ready, skipping upload");
-    return;
-  }
-
-  String path = getCollectionPath() + getTimestamp();
+  String timestamp = getTimestamp();
+  String collectionPath = getCollectionPath();
+  String path = collectionPath + timestamp;
   Document<Values::Value> doc = createReadingDocument(reading);
 
   Docs.createDocument(aClient, parent, path, DocumentMask(), doc,
                       firestoreResult);
 
   if (DEBUG_VITALS) {
-    Serial.printf("📤 Uploaded: %s\n", path.c_str());
+    processFirestoreResults("Reading uploaded");
   }
+}
+
+bool roomExists(String path) {
+  // Use the async version that populates firestoreResult
+  Docs.get(aClient, parent, path, GetDocumentOptions(), firestoreResult);
+
+  if (!firestoreResult.isError()) {
+    firestoreResult.clear();
+    return true; // document exists
+  }
+
+  if (firestoreResult.error().code() == 404) {
+    firestoreResult.clear();
+    return false; // not found
+  }
+
+  // Some other error (network, auth, etc.)
+  firestoreResult.clear();
+  return false;
+}
+
+void uploadRoom() {
+  String path = "rooms/" + devConfig.roomNumber;
+
+  if (roomExists(path)) {
+    // Serial.println("ℹ️ Room already exists, skipping creation");
+    updateRoomCreated(true);
+    return;
+  }
+
+  Document<Values::Value> doc = createRoomDocument();
+  Docs.createDocument(aClient, parent, path, DocumentMask(), doc,
+                      firestoreResult);
+
+  if (!firestoreResult.isError()) {
+    Serial.printf("✅ Room %s created\n", devConfig.roomNumber.c_str());
+    updateRoomCreated(true);
+  } else {
+    Serial.printf("⚠️ Failed to create room: %s\n",
+                  firestoreResult.error().message().c_str());
+    updateRoomCreated(false);
+  }
+
+  firestoreResult.clear();
 }

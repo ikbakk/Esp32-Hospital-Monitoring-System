@@ -35,20 +35,29 @@ void taskReadSensors(void *pvParameters) {
 
 // ==================== TASK: Upload & WiFi (Consumer) ====================
 void taskUpload(void *pvParameters) {
+  static bool roomCreated = devConfig.roomCreated;
   while (true) {
-    // Ensure WiFi connection
-    if (WiFi.status() != WL_CONNECTED) {
-      connectToWiFi();
-    }
-
     // Firebase loop
     app.loop();
 
-    // Pop reading from queue (blocking up to 100ms)
-    DeviceReading reading;
-    if (xQueueReceive(readingQueue, &reading, pdMS_TO_TICKS(100)) == pdPASS) {
-      uploadReading(reading);
-      Serial.printf("📤 Reading uploaded at %s\n", getTimestamp().c_str());
+    if (app.ready()) {
+      static unsigned long lastTry = 0;
+      if (millis() - lastTry > 5000) { // try every 5s max
+        uploadRoom();
+        lastTry = millis();
+      }
+      DeviceReading reading;
+      if (xQueueReceive(readingQueue, &reading, pdMS_TO_TICKS(100)) == pdPASS) {
+        uploadReading(reading);
+        Serial.printf("📤 Reading uploaded at %s\n", getTimestamp().c_str());
+      }
+
+    } else {
+      static unsigned long lastWarn = 0;
+      if (millis() - lastWarn > 5000) {
+        Serial.println("⚠️ Firebase not ready, skipping upload");
+        lastWarn = millis();
+      }
     }
 
     vTaskDelay(10 / portTICK_PERIOD_MS);
@@ -64,10 +73,10 @@ void setup() {
   configTime(0, 0, "pool.ntp.org");
   initFirebase();
 
-  Serial.println("🚀 Ward Monitor ESP32 Starting...");
   Serial.printf("Device: %s | Room: %s\n", devConfig.deviceId.c_str(),
                 devConfig.roomNumber.c_str());
 
+  Serial.println("Room exist: " + String(devConfig.roomCreated));
   // ---------------- CREATE QUEUE ----------------
   readingQueue = xQueueCreate(QUEUE_LENGTH, QUEUE_ITEM_SIZE);
   if (!readingQueue) {
@@ -82,8 +91,6 @@ void setup() {
 
   xTaskCreatePinnedToCore(taskUpload, "TaskUpload", 8192, NULL, 1,
                           &taskUploadHandle, 0); // Core 0
-
-  Serial.println("✅ FreeRTOS tasks created - Monitoring started");
 }
 
 // ==================== LOOP ====================

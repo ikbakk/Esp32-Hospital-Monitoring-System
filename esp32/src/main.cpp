@@ -4,6 +4,8 @@
 #include <utils.h>
 #include <wifi_setup.h>
 
+bool roomCreated = false;
+
 // ---------------- QUEUE ----------------
 QueueHandle_t readingQueue;
 
@@ -17,50 +19,78 @@ unsigned long lastReadingTime = 0;
 // ==================== TASK: Sensor Reading (Producer) ====================
 void taskReadSensors(void *pvParameters) {
   while (true) {
-    if (millis() - lastReadingTime >= VITAL_READING_INTERVAL_MS) {
-      lastReadingTime = millis();
+    if (roomCreated) {
+      if (millis() - lastReadingTime >= VITAL_READING_INTERVAL_MS) {
+        lastReadingTime = millis();
 
-      DeviceReading reading = generateRandomReading();
+        DeviceReading reading = generateRandomReading();
 
-      // Push reading to queue (non-blocking)
-      if (xQueueSend(readingQueue, &reading, 0) != pdPASS) {
-        Serial.println("⚠️ Queue full! Dropping reading...");
-      } else {
-        Serial.printf("📥 Reading queued at %s\n", getTimestamp().c_str());
+        // Push reading to queue (non-blocking)
+        if (xQueueSend(readingQueue, &reading, 0) != pdPASS) {
+          Serial.println("⚠️ Queue full! Dropping reading...");
+        } else {
+          Serial.printf("📥 Reading queued at %s\n", getTimestamp().c_str());
+        }
       }
+    } else {
+      // Serial.println("⚠️ Room not created, skipping sensor reading");
     }
-    vTaskDelay(10 / portTICK_PERIOD_MS); // Yield to other tasks
+
+    vTaskDelay(100 / portTICK_PERIOD_MS); // Yield to other tasks
   }
 }
 
 // ==================== TASK: Upload & WiFi (Consumer) ====================
 void taskUpload(void *pvParameters) {
-  static bool roomCreated = devConfig.roomCreated;
+  static int retryCount = 0;
+  static unsigned long lastAttempt = 0;
+
   while (true) {
-    // Firebase loop
+    // Keep Firebase auth/session alive
     app.loop();
 
-    if (app.ready()) {
-      static unsigned long lastTry = 0;
-      if (millis() - lastTry > 5000) { // try every 5s max
-        uploadRoom();
-        lastTry = millis();
-      }
+    // ✅ If authenticated and room exists → normal uploads
+    if (app.ready() && roomCreated) {
+      // Example: dequeue a reading and upload
       DeviceReading reading;
       if (xQueueReceive(readingQueue, &reading, pdMS_TO_TICKS(100)) == pdPASS) {
         uploadReading(reading);
-        Serial.printf("📤 Reading uploaded at %s\n", getTimestamp().c_str());
+        // Serial.printf("📤 Reading uploaded at %s\n", getTimestamp().c_str());
       }
+    }
 
-    } else {
+    // 🛠 If authenticated but room not yet created → retry with backoff
+    else if (app.ready() && !roomCreated) {
+      unsigned long now = millis();
+      unsigned long backoff = min(30000UL, 1000UL * (1 << retryCount));
+      // 1s → 2s → 4s → 8s → … → max 30s
+
+      if (now - lastAttempt >= backoff) {
+        Serial.printf("🔄 Trying to create room (attempt %d)...\n",
+                      retryCount + 1);
+        uploadRoom();
+
+        if (roomCreated) {
+          retryCount = 0; // reset after success
+        } else {
+          retryCount = min(retryCount + 1, 5); // cap backoff at 30s
+        }
+
+        lastAttempt = now;
+      }
+    }
+
+    // ⚠️ If not authenticated yet → wait quietly
+    else if (!app.ready()) {
       static unsigned long lastWarn = 0;
       if (millis() - lastWarn > 5000) {
-        Serial.println("⚠️ Firebase not ready, skipping upload");
+        Serial.println("⚠️ Firebase not ready, waiting for auth...");
         lastWarn = millis();
       }
     }
 
-    vTaskDelay(10 / portTICK_PERIOD_MS);
+    // Run every 100ms
+    vTaskDelay(100 / portTICK_PERIOD_MS);
   }
 }
 
@@ -76,7 +106,6 @@ void setup() {
   Serial.printf("Device: %s | Room: %s\n", devConfig.deviceId.c_str(),
                 devConfig.roomNumber.c_str());
 
-  Serial.println("Room exist: " + String(devConfig.roomCreated));
   // ---------------- CREATE QUEUE ----------------
   readingQueue = xQueueCreate(QUEUE_LENGTH, QUEUE_ITEM_SIZE);
   if (!readingQueue) {

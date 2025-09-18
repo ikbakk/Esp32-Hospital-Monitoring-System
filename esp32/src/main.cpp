@@ -4,6 +4,9 @@
 #include <utils.h>
 #include <wifi_setup.h>
 
+bool roomCreated = false;
+bool basePatientCreated = false;
+
 // ---------------- QUEUE ----------------
 QueueHandle_t readingQueue;
 
@@ -17,41 +20,84 @@ unsigned long lastReadingTime = 0;
 // ==================== TASK: Sensor Reading (Producer) ====================
 void taskReadSensors(void *pvParameters) {
   while (true) {
-    if (millis() - lastReadingTime >= VITAL_READING_INTERVAL_MS) {
-      lastReadingTime = millis();
+    if (roomCreated) {
+      if (millis() - lastReadingTime >= VITAL_READING_INTERVAL_MS) {
+        lastReadingTime = millis();
 
-      DeviceReading reading = generateRandomReading();
+        DeviceReading reading = generateRandomReading();
 
-      // Push reading to queue (non-blocking)
-      if (xQueueSend(readingQueue, &reading, 0) != pdPASS) {
-        Serial.println("⚠️ Queue full! Dropping reading...");
-      } else {
-        Serial.printf("📥 Reading queued at %s\n", getTimestamp().c_str());
+        // Push reading to queue (non-blocking)
+        if (xQueueSend(readingQueue, &reading, 0) != pdPASS) {
+          Serial.println("⚠️ Queue full! Dropping reading...");
+        } else {
+          Serial.printf("📥 Reading queued at %s\n", getTimestamp().c_str());
+        }
       }
+    } else {
+      // Serial.println("⚠️ Room not created, skipping sensor reading");
     }
-    vTaskDelay(10 / portTICK_PERIOD_MS); // Yield to other tasks
+
+    vTaskDelay(100 / portTICK_PERIOD_MS); // Yield to other tasks
   }
 }
 
 // ==================== TASK: Upload & WiFi (Consumer) ====================
 void taskUpload(void *pvParameters) {
-  while (true) {
-    // Ensure WiFi connection
-    if (WiFi.status() != WL_CONNECTED) {
-      connectToWiFi();
-    }
+  static int retryCount = 0;
+  static unsigned long lastAttempt = 0;
 
-    // Firebase loop
+  while (true) {
+    // Keep Firebase auth/session alive
     app.loop();
 
-    // Pop reading from queue (blocking up to 100ms)
-    DeviceReading reading;
-    if (xQueueReceive(readingQueue, &reading, pdMS_TO_TICKS(100)) == pdPASS) {
-      uploadReading(reading);
-      Serial.printf("📤 Reading uploaded at %s\n", getTimestamp().c_str());
+    // ✅ If authenticated and room exists → normal uploads
+    if (app.ready() && (roomCreated && basePatientCreated)) {
+      // Example: dequeue a reading and upload
+      DeviceReading reading;
+      if (xQueueReceive(readingQueue, &reading, pdMS_TO_TICKS(100)) == pdPASS) {
+        uploadReading(reading);
+        // Serial.printf("📤 Reading uploaded at %s\n", getTimestamp().c_str());
+      }
     }
 
-    vTaskDelay(10 / portTICK_PERIOD_MS);
+    // 🛠 If authenticated but room not yet created → retry with backoff
+    else if (app.ready() && (!roomCreated || !basePatientCreated)) {
+      unsigned long now = millis();
+      unsigned long backoff = min(30000UL, 1000UL * (1 << retryCount));
+
+      if (now - lastAttempt >= backoff) {
+        if (!basePatientCreated) {
+          Serial.printf(
+              "🔄 Trying to create patient document (attempt %d)...\n",
+              retryCount + 1);
+          uploadBasePatient();
+        } else if (!roomCreated) {
+          Serial.printf("🔄 Trying to create room (attempt %d)...\n",
+                        retryCount + 1);
+          uploadRoom();
+        }
+
+        if (roomCreated && basePatientCreated) {
+          retryCount = 0; // reset after success
+        } else {
+          retryCount = min(retryCount + 1, 5); // cap backoff at 30s
+        }
+
+        lastAttempt = now;
+      }
+    }
+
+    // ⚠️ If not authenticated yet → wait quietly
+    else if (!app.ready()) {
+      static unsigned long lastWarn = 0;
+      if (millis() - lastWarn > 5000) {
+        Serial.println("⚠️ Firebase not ready, waiting for auth...");
+        lastWarn = millis();
+      }
+    }
+
+    // Run every 100ms
+    vTaskDelay(100 / portTICK_PERIOD_MS);
   }
 }
 
@@ -64,7 +110,6 @@ void setup() {
   configTime(0, 0, "pool.ntp.org");
   initFirebase();
 
-  Serial.println("🚀 Ward Monitor ESP32 Starting...");
   Serial.printf("Device: %s | Room: %s\n", devConfig.deviceId.c_str(),
                 devConfig.roomNumber.c_str());
 
@@ -82,8 +127,6 @@ void setup() {
 
   xTaskCreatePinnedToCore(taskUpload, "TaskUpload", 8192, NULL, 1,
                           &taskUploadHandle, 0); // Core 0
-
-  Serial.println("✅ FreeRTOS tasks created - Monitoring started");
 }
 
 // ==================== LOOP ====================

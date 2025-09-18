@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { SidebarProvider } from "@/components/ui/sidebar";
 import QueryProvider from "@/providers/queryProvider";
 import { AuthProvider } from "@/providers/authProvider";
 
@@ -31,11 +30,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} w-full antialiased`}
       >
         <QueryProvider>
-          <SidebarProvider>
-            <AuthProvider>
-              <main className="w-full">{children}</main>
-            </AuthProvider>
-          </SidebarProvider>
+          <AuthProvider>{children}</AuthProvider>
         </QueryProvider>
       </body>
     </html>

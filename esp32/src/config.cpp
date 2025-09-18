@@ -3,13 +3,26 @@
 Preferences prefs;
 bool configLoaded = false;
 // ==================== GLOBALS ====================
-DeviceConfig devConfig = {"Device_001", "Room_001", "Bed_001", "Patient_001"};
+DeviceConfig devConfig = {"device_001", "room_101", "bed_a"};
+
+PatientLocation location = {devConfig.roomNumber, devConfig.bedNumber};
+
+BasePatientConfig basePatientConfig = {"patient_001", "Jone Doe",   "m",
+                                       "22",          "2022-01-01", location};
 
 // ==================== SMART SAVE HELPERS ====================
 void saveStringIfChanged(const char *key, const String &value) {
   prefs.begin("config", false);
   if (prefs.getString(key, "") != value) {
     prefs.putString(key, value);
+  }
+  prefs.end();
+}
+
+void saveBoolIfChanged(const char *key, bool value) {
+  prefs.begin("config", false);
+  if (prefs.getBool(key, false) != value) {
+    prefs.putBool(key, value);
   }
   prefs.end();
 }
@@ -36,13 +49,6 @@ void updateBedNumber(const String &value) {
   }
 }
 
-void updatePatientId(const String &value) {
-  if (devConfig.patientId != value) {
-    devConfig.patientId = value;
-    saveStringIfChanged("patientId", value);
-  }
-}
-
 // ==================== LOAD CONFIGS FROM NVS ====================
 void loadConfigs() {
   prefs.begin("config", true);
@@ -50,7 +56,15 @@ void loadConfigs() {
   devConfig.deviceId = prefs.getString("deviceId", devConfig.deviceId);
   devConfig.roomNumber = prefs.getString("roomNumber", devConfig.roomNumber);
   devConfig.bedNumber = prefs.getString("bedNumber", devConfig.bedNumber);
-  devConfig.patientId = prefs.getString("patientId", devConfig.patientId);
+
+  basePatientConfig.id = prefs.getString("id", basePatientConfig.id);
+  basePatientConfig.name = prefs.getString("name", basePatientConfig.name);
+  basePatientConfig.gender =
+      prefs.getString("gender", basePatientConfig.gender);
+  basePatientConfig.admissionDate =
+      prefs.getString("admissionDate", basePatientConfig.admissionDate);
+  basePatientConfig.gender =
+      prefs.getString("gender", basePatientConfig.gender);
 
   configLoaded = true;
 

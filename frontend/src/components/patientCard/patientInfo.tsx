@@ -1,18 +1,48 @@
-import { User } from "lucide-react";
-import type { Patient } from "@/types/PatientCard";
+import SkeletonText from "../ui/skeleton-text";
 
-const PatientInfo = ({ patient }: { patient: Patient }) => {
+interface PatientInfoProps {
+  isLoading: boolean;
+  name: string;
+  age: number;
+  admissionDate: string;
+}
+
+const PatientInfo = ({
+  name,
+  age,
+  admissionDate,
+  isLoading,
+}: PatientInfoProps) => {
+  const date = new Date(admissionDate).toLocaleString();
+
   return (
-    <div className="flex items-center gap-3 pb-3 border-b border-gray-800">
-      <div className="p-2 bg-gray-100 rounded-full">
-        <User className="w-4 h-4 text-gray-600" />
-      </div>
-      <div>
-        <p className="font-semibold text-gray-900">{patient.name}</p>
-        <p className="text-sm text-gray-500">
-          Age {patient.age} • Admitted{" "}
-          {new Date(patient.admissionDate).toLocaleDateString()}
-        </p>
+    <div className="flex w-full flex-col gap-1 border-b border-gray-800 pb-3">
+      <h2 className="font-semibold text-gray-900">
+        <SkeletonText
+          loading={isLoading}
+          skeletonClassName="h-6 w-full rounded-md bg-gray-200"
+        >
+          {name}
+        </SkeletonText>
+      </h2>
+
+      <div className="flex w-full  flex-col gap-1">
+        <h4 className="w-full text-sm text-gray-500">
+          <SkeletonText
+            loading={isLoading}
+            skeletonClassName="h-5 w-1/4 rounded-md bg-gray-200"
+          >
+            Age {age}
+          </SkeletonText>
+        </h4>
+        <h4 className="w-full text-sm text-gray-500">
+          <SkeletonText
+            loading={isLoading}
+            skeletonClassName="h-5 w-3/4 rounded-md bg-gray-200"
+          >
+            Admitted {date}
+          </SkeletonText>
+        </h4>
       </div>
     </div>
   );

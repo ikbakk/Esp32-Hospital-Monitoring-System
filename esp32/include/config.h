@@ -24,22 +24,38 @@
 
 extern Preferences prefs;
 extern bool configLoaded;
+extern bool roomCreated;
+extern bool basePatientCreated;
 
 // ==================== STRUCTS ====================
-
 struct DeviceConfig {
   String deviceId;
   String roomNumber;
   String bedNumber;
-  String patientId;
+};
+
+struct PatientLocation {
+  String roomNumber;
+  String bedNumber;
+};
+
+struct BasePatientConfig {
+  String id;
+  String name;
+  String gender;
+  String age;
+  String admissionDate;
+  PatientLocation location;
 };
 
 // ==================== GLOBAL VARIABLES ====================
+extern BasePatientConfig basePatientConfig;
 extern DeviceConfig devConfig;
 extern Preferences prefs;
 
 // ==================== SMART SAVE HELPERS ====================
 void saveStringIfChanged(const char *key, const String &value);
+void saveBoolIfChanged(const char *key, bool value);
 
 // ==================== CONFIG UPDATE FUNCTIONS ====================
 // DeviceConfig
@@ -47,6 +63,7 @@ void updateDeviceId(const String &value);
 void updateRoomNumber(const String &value);
 void updateBedNumber(const String &value);
 void updatePatientId(const String &value);
+void updateRoomCreated(bool value);
 
 // ==================== INITIALIZATION ====================
 void loadConfigs();

@@ -7,13 +7,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useState } from "react";
 
-const TimeRangeSelector = () => {
-  const [timeRange, setTimeRange] = useState("24h");
+interface TimeRangeSelectorProps {
+  value: string;
+  onChange: (value: string) => void;
+}
 
+const TimeRangeSelector = ({ value, onChange }: TimeRangeSelectorProps) => {
   return (
-    <Select value={timeRange} onValueChange={setTimeRange}>
+    <Select value={value} onValueChange={onChange}>
       <SelectTrigger className="w-[120px]">
         <SelectValue placeholder="Time range" />
       </SelectTrigger>

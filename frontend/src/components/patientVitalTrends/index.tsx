@@ -18,27 +18,30 @@ const PatientVitalTrends = ({
         icon={<Heart className="h-4 w-4 text-red-500" />}
         data={currentPatientData}
         dataKey="heartRate"
-        color="var(--color-destructive)"
+        color="var(--color-red-500)"
         unit="bpm"
         normalRange="60-100 bpm"
+        paddingPercent={0.2}
       />
       <VitalTrendCard
         title="Oxygen Saturation"
         icon={<Activity className="h-4 w-4 text-blue-500" />}
         data={currentPatientData}
         dataKey="spo2"
-        color="var(--chart-2)"
+        color="var(--color-blue-500)"
         unit="%"
         normalRange="95-100%"
+        paddingPercent={0.02}
       />
       <VitalTrendCard
         title="Body Temperature"
         icon={<Thermometer className="h-4 w-4 text-orange-500" />}
         data={currentPatientData}
         dataKey="bodyTemp"
-        color="var(--chart-4)"
+        color="var(--color-orange-500)"
         unit="°C"
         normalRange="36.0-37.5°C"
+        paddingPercent={0.01}
       />
     </div>
   );

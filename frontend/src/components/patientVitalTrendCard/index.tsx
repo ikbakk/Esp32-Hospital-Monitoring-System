@@ -29,6 +29,7 @@ interface VitalTrendCardProps {
   color: string;
   unit: string;
   normalRange: string;
+  paddingPercent?: number;
 }
 
 const VitalTrendCard = ({
@@ -39,14 +40,19 @@ const VitalTrendCard = ({
   color,
   unit,
   normalRange,
+  paddingPercent = 0.15,
 }: VitalTrendCardProps) => {
-  const transformedData = data.map((reading) => ({
-    time: new Date(reading.timestamp).toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    }),
-    value: reading[dataKey] as number,
-  }));
+  const transformedData = data.map((reading) => {
+    const timestamp = new Date(reading.timestamp);
+    return {
+      timelabel: timestamp.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+      timestamp: timestamp.getTime(),
+      value: reading[dataKey] as number,
+    };
+  });
 
   const latestReading = last(transformedData);
   const previousReading = nth(transformedData, -2);
@@ -54,6 +60,18 @@ const VitalTrendCard = ({
   const previousValue = get(previousReading, "value", 0);
   const trend = latestValue > previousValue ? "up" : "down";
   const trendColor = trend === "up" ? "text-red-500" : "text-green-500";
+
+  const yAxisDomain = () => {
+    const values = transformedData
+      .map((d) => d.value)
+      .filter((v) => typeof v === "number");
+    const dataMin = Math.min(...values);
+    const dataMax = Math.max(...values);
+    const yMin = Math.max(0, Math.floor(dataMin * (1 - paddingPercent)));
+    const yMax = Math.ceil(dataMax * (1 + paddingPercent));
+
+    return [yMin, yMax];
+  };
 
   return (
     <Card>
@@ -81,6 +99,19 @@ const VitalTrendCard = ({
           Current reading • Normal range: {normalRange}
         </p>
 
+        <p className="text-xs text-muted-foreground mb-2">
+          {new Date(data[0].timestamp).toLocaleDateString("en-US", {
+            dateStyle: "full",
+          })}{" "}
+          -{" "}
+          {new Date(data[data.length - 1].timestamp).toLocaleDateString(
+            "en-US",
+            {
+              dateStyle: "full",
+            },
+          )}
+        </p>
+
         <ChartContainer
           config={{
             value: { label: title, color },
@@ -91,7 +122,7 @@ const VitalTrendCard = ({
             <LineChart data={transformedData} margin={{ left: 12, right: 12 }}>
               <CartesianGrid vertical={false} strokeDasharray="3 3" />
               <XAxis
-                dataKey="time"
+                dataKey="timelabel"
                 tickLine={false}
                 axisLine={false}
                 tickMargin={8}
@@ -103,22 +134,34 @@ const VitalTrendCard = ({
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
+                unit={` ${unit}`}
+                domain={yAxisDomain()}
               />
               <ChartTooltip
                 content={
                   <ChartTooltipContent
                     nameKey="value"
-                    labelFormatter={(value) => `Time: ${value}`}
+                    labelFormatter={(_, payload) => {
+                      const ts = payload?.[0]?.payload?.timestamp;
+                      return ts
+                        ? new Date(ts).toLocaleString(undefined, {
+                            month: "short",
+                            day: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })
+                        : "";
+                    }}
                   />
                 }
-              />
+              />{" "}
               <Line
                 type="natural"
                 dataKey="value"
                 stroke={color}
                 strokeWidth={2}
                 dot={false}
-                activeDot={{ r: 6, stroke: color, strokeWidth: 2 }}
+                activeDot={{ r: 4, stroke: color, strokeWidth: 1 }}
               />
             </LineChart>
           </ResponsiveContainer>

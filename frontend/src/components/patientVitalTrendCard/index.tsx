@@ -6,17 +6,26 @@ import {
   Line,
   LineChart,
   ResponsiveContainer,
-  Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
 import { Badge } from "../ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { PatientReadings } from "@/types/patient";
+import get from "lodash/get";
+import last from "lodash/last";
+import nth from "lodash/nth";
 
 interface VitalTrendCardProps {
   title: string;
   icon: React.ReactNode;
-  data: any[];
+  data: PatientReadings[];
+  dataKey: keyof PatientReadings; // "heartRate" | "spo2" | "bodyTemp"
   color: string;
   unit: string;
   normalRange: string;
@@ -26,12 +35,23 @@ const VitalTrendCard = ({
   title,
   icon,
   data,
+  dataKey,
   color,
   unit,
   normalRange,
 }: VitalTrendCardProps) => {
-  const latestValue = data[data.length - 1]?.value || 0;
-  const previousValue = data[data.length - 2]?.value || 0;
+  const transformedData = data.map((reading) => ({
+    time: new Date(reading.timestamp).toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
+    value: reading[dataKey] as number,
+  }));
+
+  const latestReading = last(transformedData);
+  const previousReading = nth(transformedData, -2);
+  const latestValue = get(latestReading, "value", 0);
+  const previousValue = get(previousReading, "value", 0);
   const trend = latestValue > previousValue ? "up" : "down";
   const trendColor = trend === "up" ? "text-red-500" : "text-green-500";
 
@@ -60,19 +80,23 @@ const VitalTrendCard = ({
         <p className="text-xs text-muted-foreground mb-4">
           Current reading • Normal range: {normalRange}
         </p>
-        <div className="h-[200px]">
+
+        <ChartContainer
+          config={{
+            value: { label: title, color },
+          }}
+          className="h-[200px] w-full"
+        >
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={data}>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke="hsl(var(--border))"
-              />
+            <LineChart data={transformedData} margin={{ left: 12, right: 12 }}>
+              <CartesianGrid vertical={false} strokeDasharray="3 3" />
               <XAxis
                 dataKey="time"
-                stroke="hsl(var(--muted-foreground))"
-                fontSize={12}
                 tickLine={false}
                 axisLine={false}
+                tickMargin={8}
+                stroke="hsl(var(--muted-foreground))"
+                fontSize={12}
               />
               <YAxis
                 stroke="hsl(var(--muted-foreground))"
@@ -80,24 +104,25 @@ const VitalTrendCard = ({
                 tickLine={false}
                 axisLine={false}
               />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "hsl(var(--card))",
-                  border: "1px solid hsl(var(--border))",
-                  borderRadius: "6px",
-                }}
+              <ChartTooltip
+                content={
+                  <ChartTooltipContent
+                    nameKey="value"
+                    labelFormatter={(value) => `Time: ${value}`}
+                  />
+                }
               />
               <Line
-                type="monotone"
+                type="natural"
                 dataKey="value"
                 stroke={color}
                 strokeWidth={2}
-                dot={{ fill: color, strokeWidth: 2, r: 4 }}
+                dot={false}
                 activeDot={{ r: 6, stroke: color, strokeWidth: 2 }}
               />
             </LineChart>
           </ResponsiveContainer>
-        </div>
+        </ChartContainer>
       </CardContent>
     </Card>
   );

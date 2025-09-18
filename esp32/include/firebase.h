@@ -21,6 +21,7 @@ void initFirebase();
 void processFirestoreResults(String message = "");
 void uploadReading(const DeviceReading &reading);
 void uploadRoom();
+void uploadBasePatient();
 
 // ==================== DOCUMENT HELPERS ====================
 void addField(Document<Values::Value> &doc, const String &key,

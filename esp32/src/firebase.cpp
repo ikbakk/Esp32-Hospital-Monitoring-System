@@ -11,11 +11,6 @@ AsyncResult firestoreResult;
 Firestore::Documents Docs;
 Firestore::Parent parent = Firestore::Parent(FIREBASE_PROJECT_ID);
 
-String getCollectionPath() {
-  return "rooms/" + devConfig.roomNumber + "/patients/" + devConfig.patientId +
-         "/readings/";
-}
-
 void auth_debug_print(AsyncResult &aResult) {
   if (aResult.isEvent()) {
     Firebase.printf("Event task: %s, msg: %s, code: %d\n",
@@ -125,6 +120,29 @@ Document<Values::Value> createReadingDocument(const DeviceReading &reading) {
   return doc;
 }
 
+Document<Values::Value> createPatientDocument() {
+  Document<Values::Value> doc;
+
+  addField(doc, "id", basePatientConfig.id);
+  addField(doc, "name", basePatientConfig.name);
+  addField(doc, "age", basePatientConfig.age);
+  addField(doc, "gender", basePatientConfig.gender);
+  addField(doc, "admissionDate", basePatientConfig.admissionDate);
+
+  // Build nested object for location
+
+  Values::MapValue locationMap;
+  locationMap.add("room", Values::Value(Values::StringValue(
+                              basePatientConfig.location.room)));
+  locationMap.add("bed", Values::Value(Values::StringValue(
+                             basePatientConfig.location.bed)));
+
+  // Attach nested object
+  doc.add("location", Values::Value(locationMap));
+
+  return doc;
+};
+
 Document<Values::Value> createRoomDocument() {
   Document<Values::Value> doc;
 
@@ -138,8 +156,9 @@ Document<Values::Value> createRoomDocument() {
 // ==================== UPLOAD FUNCTION ====================
 void uploadReading(const DeviceReading &reading) {
   String timestamp = getTimestamp();
-  String collectionPath = getCollectionPath();
-  String path = collectionPath + timestamp;
+  String collectionPath =
+      "patients/" + devConfig.patientId + "/readings/" + timestamp;
+  String path = collectionPath;
   Document<Values::Value> doc = createReadingDocument(reading);
 
   Docs.createDocument(aClient, parent, path, DocumentMask(), doc,
@@ -150,7 +169,7 @@ void uploadReading(const DeviceReading &reading) {
   }
 }
 
-bool roomExists(const String &path) {
+bool documentChecker(const String &path) {
   Serial.printf("🔎 Checking Firestore path: %s\n", path.c_str());
 
   // Try to get the document (sync, blocks until reply)
@@ -178,7 +197,7 @@ bool roomExists(const String &path) {
 void uploadRoom() {
   String path = "rooms/" + devConfig.roomNumber;
 
-  if (roomExists(path)) {
+  if (documentChecker(path)) {
     Serial.printf("ℹ️ Room %s already exists, skipping creation\n",
                   devConfig.roomNumber.c_str());
     updateRoomCreated(true);
@@ -206,5 +225,40 @@ void uploadRoom() {
                   aClient.lastError().code());
     updateRoomCreated(false);
     roomCreated = false;
+  }
+}
+
+void uploadBasePatient() {
+  String path = "patients/" + basePatientConfig.id;
+
+  if (documentChecker(path)) {
+    Serial.printf("ℹ️ Document %s already exists, skipping creation\n",
+                  basePatientConfig.id.c_str());
+    updateRoomCreated(true);
+    basePatientCreated = true;
+    return;
+  }
+
+  // Build document data
+  Document<Values::Value> doc = createPatientDocument();
+
+  Serial.printf("📤 Creating new patient base data %s...\n",
+                devConfig.roomNumber.c_str());
+
+  String payload =
+      Docs.createDocument(aClient, Firestore::Parent(FIREBASE_PROJECT_ID), path,
+                          DocumentMask(), doc);
+
+  if (aClient.lastError().code() == 0) {
+    Serial.printf("✅ Base data %s created successfully\n",
+                  basePatientConfig.id.c_str());
+    updateRoomCreated(true);
+    basePatientCreated = true;
+  } else {
+    Serial.printf("⚠️ Failed to create document: %s (code %d)\n",
+                  aClient.lastError().message().c_str(),
+                  aClient.lastError().code());
+    updateRoomCreated(false);
+    basePatientCreated = false;
   }
 }

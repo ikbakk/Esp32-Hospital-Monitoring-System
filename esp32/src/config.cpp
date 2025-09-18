@@ -3,8 +3,13 @@
 Preferences prefs;
 bool configLoaded = false;
 // ==================== GLOBALS ====================
-DeviceConfig devConfig = {"Device_001", "Room_001", "Bed_001", "Patient_001",
+DeviceConfig devConfig = {"device_001", "room_001", "bed_001", "patient_001",
                           false};
+
+PatientLocation location = {devConfig.roomNumber, devConfig.bedNumber};
+
+BasePatientConfig basePatientConfig = {"patient_001", "Jone Doe",   "m",
+                                       "22",          "2022-01-01", location};
 
 // ==================== SMART SAVE HELPERS ====================
 void saveStringIfChanged(const char *key, const String &value) {
@@ -68,6 +73,15 @@ void loadConfigs() {
   devConfig.bedNumber = prefs.getString("bedNumber", devConfig.bedNumber);
   devConfig.patientId = prefs.getString("patientId", devConfig.patientId);
   devConfig.roomCreated = prefs.getBool("roomCreated", devConfig.roomCreated);
+
+  basePatientConfig.id = prefs.getString("id", basePatientConfig.id);
+  basePatientConfig.name = prefs.getString("name", basePatientConfig.name);
+  basePatientConfig.gender =
+      prefs.getString("gender", basePatientConfig.gender);
+  basePatientConfig.admissionDate =
+      prefs.getString("admissionDate", basePatientConfig.admissionDate);
+  basePatientConfig.gender =
+      prefs.getString("gender", basePatientConfig.gender);
 
   configLoaded = true;
 

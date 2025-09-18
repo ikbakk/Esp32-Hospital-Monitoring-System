@@ -5,6 +5,7 @@
 #include <wifi_setup.h>
 
 bool roomCreated = false;
+bool basePatientCreated = false;
 
 // ---------------- QUEUE ----------------
 QueueHandle_t readingQueue;
@@ -50,7 +51,7 @@ void taskUpload(void *pvParameters) {
     app.loop();
 
     // ✅ If authenticated and room exists → normal uploads
-    if (app.ready() && roomCreated) {
+    if (app.ready() && (roomCreated && basePatientCreated)) {
       // Example: dequeue a reading and upload
       DeviceReading reading;
       if (xQueueReceive(readingQueue, &reading, pdMS_TO_TICKS(100)) == pdPASS) {
@@ -60,17 +61,23 @@ void taskUpload(void *pvParameters) {
     }
 
     // 🛠 If authenticated but room not yet created → retry with backoff
-    else if (app.ready() && !roomCreated) {
+    else if (app.ready() && (!roomCreated || !basePatientCreated)) {
       unsigned long now = millis();
       unsigned long backoff = min(30000UL, 1000UL * (1 << retryCount));
-      // 1s → 2s → 4s → 8s → … → max 30s
 
       if (now - lastAttempt >= backoff) {
-        Serial.printf("🔄 Trying to create room (attempt %d)...\n",
-                      retryCount + 1);
-        uploadRoom();
+        if (!basePatientCreated) {
+          Serial.printf(
+              "🔄 Trying to create patient document (attempt %d)...\n",
+              retryCount + 1);
+          uploadBasePatient();
+        } else if (!roomCreated) {
+          Serial.printf("🔄 Trying to create room (attempt %d)...\n",
+                        retryCount + 1);
+          uploadRoom();
+        }
 
-        if (roomCreated) {
+        if (roomCreated && basePatientCreated) {
           retryCount = 0; // reset after success
         } else {
           retryCount = min(retryCount + 1, 5); // cap backoff at 30s

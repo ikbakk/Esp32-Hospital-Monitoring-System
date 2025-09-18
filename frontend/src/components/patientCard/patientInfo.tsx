@@ -1,18 +1,25 @@
-import { Timestamp } from "firebase/firestore";
 import SkeletonText from "../ui/skeleton-text";
 
 interface PatientInfoProps {
-  name: string | undefined;
-  age: number | undefined;
-  admissionDate: Timestamp | undefined;
+  isLoading: boolean;
+  name: string;
+  age: number;
+  admissionDate: string;
 }
 
-const PatientInfo = ({ name, age, admissionDate }: PatientInfoProps) => {
+const PatientInfo = ({
+  name,
+  age,
+  admissionDate,
+  isLoading,
+}: PatientInfoProps) => {
+  const date = new Date(admissionDate).toLocaleString();
+
   return (
     <div className="flex w-full flex-col gap-1 border-b border-gray-800 pb-3">
       <h2 className="font-semibold text-gray-900">
         <SkeletonText
-          loading={!name}
+          loading={isLoading}
           skeletonClassName="h-6 w-full rounded-md bg-gray-200"
         >
           {name}
@@ -22,7 +29,7 @@ const PatientInfo = ({ name, age, admissionDate }: PatientInfoProps) => {
       <div className="flex w-full  flex-col gap-1">
         <h4 className="w-full text-sm text-gray-500">
           <SkeletonText
-            loading={!age}
+            loading={isLoading}
             skeletonClassName="h-5 w-1/4 rounded-md bg-gray-200"
           >
             Age {age}
@@ -30,10 +37,10 @@ const PatientInfo = ({ name, age, admissionDate }: PatientInfoProps) => {
         </h4>
         <h4 className="w-full text-sm text-gray-500">
           <SkeletonText
-            loading={!admissionDate}
+            loading={isLoading}
             skeletonClassName="h-5 w-3/4 rounded-md bg-gray-200"
           >
-            Admitted {admissionDate?.toDate().toDateString()}
+            Admitted {date}
           </SkeletonText>
         </h4>
       </div>

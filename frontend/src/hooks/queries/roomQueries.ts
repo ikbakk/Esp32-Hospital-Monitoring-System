@@ -5,27 +5,28 @@ import {
   FirestoreDataConverter,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { RoomType } from "@/types/room";
+import { BedType } from "@/types/room";
 import {
   useFirestoreCollection,
   useFirestoreDocument,
+  useStaticFirestoreDocument,
 } from "../useFirestoreQuery";
 
-const roomConverter: FirestoreDataConverter<RoomType> = {
-  toFirestore: (room: RoomType) => room as any,
-  fromFirestore: (snap) => snap.data() as RoomType,
+const roomConverter: FirestoreDataConverter<BedType> = {
+  toFirestore: (room: BedType) => room as any,
+  fromFirestore: (snap) => snap.data() as BedType,
 };
 
 export const getRoomsList = () => {
-  return useFirestoreCollection<RoomType>(
+  return useFirestoreCollection<BedType>(
     ["rooms"],
     collection(db, "rooms").withConverter(roomConverter),
   );
 };
 
-export const getRoomDetails = (roomId: string) => {
-  return useFirestoreDocument<RoomType>(
-    ["room", roomId],
-    doc(db, "rooms", roomId).withConverter(roomConverter),
+export const getBedDetails = (roomId: string, bedId: string) => {
+  return useStaticFirestoreDocument<BedType>(
+    ["room", roomId, bedId],
+    doc(db, "rooms", roomId, "beds", bedId).withConverter(roomConverter),
   );
 };

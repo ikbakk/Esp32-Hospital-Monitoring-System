@@ -133,9 +133,9 @@ Document<Values::Value> createPatientDocument() {
 
   Values::MapValue locationMap;
   locationMap.add("room", Values::Value(Values::StringValue(
-                              basePatientConfig.location.room)));
+                              basePatientConfig.location.roomNumber)));
   locationMap.add("bed", Values::Value(Values::StringValue(
-                             basePatientConfig.location.bed)));
+                             basePatientConfig.location.bedNumber)));
 
   // Attach nested object
   doc.add("location", Values::Value(locationMap));
@@ -157,7 +157,7 @@ Document<Values::Value> createRoomDocument() {
 void uploadReading(const DeviceReading &reading) {
   String timestamp = getTimestamp();
   String collectionPath =
-      "patients/" + devConfig.patientId + "/readings/" + timestamp;
+      "patients/" + basePatientConfig.id + "/readings/" + timestamp;
   String path = collectionPath;
   Document<Values::Value> doc = createReadingDocument(reading);
 
@@ -195,12 +195,12 @@ bool documentChecker(const String &path) {
 }
 
 void uploadRoom() {
-  String path = "rooms/" + devConfig.roomNumber;
+  String path =
+      "rooms/" + devConfig.roomNumber + "/beds/" + devConfig.bedNumber;
 
   if (documentChecker(path)) {
     Serial.printf("ℹ️ Room %s already exists, skipping creation\n",
                   devConfig.roomNumber.c_str());
-    updateRoomCreated(true);
     roomCreated = true;
     return;
   }
@@ -217,13 +217,11 @@ void uploadRoom() {
   if (aClient.lastError().code() == 0) {
     Serial.printf("✅ Room %s created successfully\n",
                   devConfig.roomNumber.c_str());
-    updateRoomCreated(true);
     roomCreated = true;
   } else {
     Serial.printf("⚠️ Failed to create room: %s (code %d)\n",
                   aClient.lastError().message().c_str(),
                   aClient.lastError().code());
-    updateRoomCreated(false);
     roomCreated = false;
   }
 }
@@ -234,7 +232,6 @@ void uploadBasePatient() {
   if (documentChecker(path)) {
     Serial.printf("ℹ️ Document %s already exists, skipping creation\n",
                   basePatientConfig.id.c_str());
-    updateRoomCreated(true);
     basePatientCreated = true;
     return;
   }
@@ -252,13 +249,11 @@ void uploadBasePatient() {
   if (aClient.lastError().code() == 0) {
     Serial.printf("✅ Base data %s created successfully\n",
                   basePatientConfig.id.c_str());
-    updateRoomCreated(true);
     basePatientCreated = true;
   } else {
     Serial.printf("⚠️ Failed to create document: %s (code %d)\n",
                   aClient.lastError().message().c_str(),
                   aClient.lastError().code());
-    updateRoomCreated(false);
     basePatientCreated = false;
   }
 }

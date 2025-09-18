@@ -25,18 +25,31 @@
 extern Preferences prefs;
 extern bool configLoaded;
 extern bool roomCreated;
+extern bool basePatientCreated;
 
 // ==================== STRUCTS ====================
-
 struct DeviceConfig {
   String deviceId;
   String roomNumber;
   String bedNumber;
-  String patientId;
-  bool roomCreated;
+};
+
+struct PatientLocation {
+  String roomNumber;
+  String bedNumber;
+};
+
+struct BasePatientConfig {
+  String id;
+  String name;
+  String gender;
+  String age;
+  String admissionDate;
+  PatientLocation location;
 };
 
 // ==================== GLOBAL VARIABLES ====================
+extern BasePatientConfig basePatientConfig;
 extern DeviceConfig devConfig;
 extern Preferences prefs;
 

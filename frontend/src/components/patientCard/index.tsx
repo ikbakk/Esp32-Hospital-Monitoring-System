@@ -9,7 +9,7 @@ import {
   CardFooter,
   CardHeader,
 } from "@/components/ui/card";
-import type { Patient } from "@/types/PatientCard";
+import type { PatientInfo as Patient } from "@/types/patient";
 import PatientCardContent from "./patientCardContent";
 import PatientInfo from "./patientInfo";
 import { getBedDetails } from "@/hooks/queries/roomQueries";
@@ -24,10 +24,7 @@ interface PatientCardProps {
     roomId: string;
     bedId: string;
   };
-  patient: Patient & {
-    id: string;
-    name: string;
-  };
+  patient: Patient;
 }
 
 const PatientCard = ({ patient, location }: PatientCardProps) => {
@@ -42,14 +39,12 @@ const PatientCard = ({ patient, location }: PatientCardProps) => {
 
   return (
     <Card className="max-w w-full-sm border border-gray-800">
-      <CardHeader
-        className={`${getConditionColor(patient.condition)} p-4 text-white`}
-      >
+      <CardHeader className={`${getConditionColor("normal")} p-4 text-white`}>
         <PatientCardHeader
           isLoading={bedDataLoading}
           roomName={bedData ? bedData.roomNumber : ""}
           bedName={bedData ? bedData.bedNumber : ""}
-          patientCondition={patient.condition}
+          patientCondition={"normal"}
         />
       </CardHeader>
 
@@ -66,7 +61,7 @@ const PatientCard = ({ patient, location }: PatientCardProps) => {
         <PatientCardContent
           isLoading={!readings}
           latestReading={latestReadings}
-          abnormalities={getAbnormalities(patient.vitals)}
+          // abnormalities={getAbnormalities("")}
         />
       </CardContent>
 
@@ -75,27 +70,33 @@ const PatientCard = ({ patient, location }: PatientCardProps) => {
         <div className="flex w-full items-center justify-between rounded bg-gray-50 p-2 text-xs text-gray-500">
           <div className="flex w-full items-center gap-1">
             <Clock className="h-4 w-4" />
-            <span className="w-full">
-              Last updated: <br />
-              <SkeletonText
-                loading={!readings}
-                skeletonClassName="w-3/4 h-4 bg-gray-200"
-              >
-                {latestReadings
-                  ? new Date(latestReadings.timestamp).toLocaleString()
-                  : ""}
-              </SkeletonText>
-            </span>
-          </div>
-          <Link href={`/patient/${patientInfo ? patientInfo.id : ""}/details`}>
-            <Button
-              variant="link"
-              size="sm"
-              className="text-xs -mr-4 hover:cursor-pointer"
+            <SkeletonText
+              loading={!readings}
+              className="w-full"
+              skeletonClassName="w-3/4 h-7 bg-gray-200"
             >
-              View Details
-            </Button>
-          </Link>
+              Last updated: <br />
+              {latestReadings
+                ? new Date(latestReadings.timestamp).toLocaleString()
+                : ""}
+            </SkeletonText>
+          </div>
+          <SkeletonText
+            loading={patientInfoLoading}
+            skeletonClassName="h-7 w-24 bg-gray-200"
+          >
+            <Link
+              href={`/patient/${patientInfo ? patientInfo.id : ""}/details`}
+            >
+              <Button
+                variant="link"
+                size="sm"
+                className="text-xs -mr-4 hover:cursor-pointer"
+              >
+                View Details
+              </Button>
+            </Link>
+          </SkeletonText>
         </div>
       </CardFooter>
     </Card>

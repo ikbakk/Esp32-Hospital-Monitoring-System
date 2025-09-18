@@ -17,7 +17,7 @@ import { getPatient, getPatientReadings } from "@/hooks/queries/patientQueries";
 import { getAbnormalities, getConditionColor } from "./cardUtils";
 import PatientCardHeader from "./cardHeader";
 import last from "lodash/last";
-import { PatientReadings } from "@/types/patient";
+import SkeletonText from "../ui/skeleton-text";
 
 interface PatientCardProps {
   location: {
@@ -43,7 +43,7 @@ const PatientCard = ({ patient, location }: PatientCardProps) => {
   return (
     <Card className="max-w w-full-sm border border-gray-800">
       <CardHeader
-        className={`${getConditionColor(patient.condition)} text-white p-4`}
+        className={`${getConditionColor(patient.condition)} p-4 text-white`}
       >
         <PatientCardHeader
           isLoading={bedDataLoading}
@@ -53,7 +53,7 @@ const PatientCard = ({ patient, location }: PatientCardProps) => {
         />
       </CardHeader>
 
-      <CardContent className="p-4 flex flex-col gap-4">
+      <CardContent className="flex flex-col gap-4 p-4">
         {/* Patient Info */}
         <PatientInfo
           isLoading={patientInfoLoading}
@@ -72,16 +72,26 @@ const PatientCard = ({ patient, location }: PatientCardProps) => {
 
       {/* Footer */}
       <CardFooter className="px-4 pb-4">
-        <div className="flex items-center justify-between text-xs text-gray-500 bg-gray-50 p-2 rounded">
-          <div className="flex items-center gap-1">
-            <Clock className="w-3 h-3" />
-            {/* <span>Last updated: {new Date().toLocaleTimeString()}</span> */}
+        <div className="flex w-full items-center justify-between rounded bg-gray-50 p-2 text-xs text-gray-500">
+          <div className="flex w-full items-center gap-1">
+            <Clock className="h-4 w-4" />
+            <span className="w-full">
+              Last updated: <br />
+              <SkeletonText
+                loading={!readings}
+                skeletonClassName="w-3/4 h-4 bg-gray-200"
+              >
+                {latestReadings
+                  ? new Date(latestReadings.timestamp).toLocaleString()
+                  : ""}
+              </SkeletonText>
+            </span>
           </div>
-          <Link href={`/patient/${patient.id}/details`}>
+          <Link href={`/patient/${patientInfo ? patientInfo.id : ""}/details`}>
             <Button
-              variant="ghost"
+              variant="link"
               size="sm"
-              className="h-6 text-xs hover:cursor-pointer"
+              className="text-xs -mr-4 hover:cursor-pointer"
             >
               View Details
             </Button>

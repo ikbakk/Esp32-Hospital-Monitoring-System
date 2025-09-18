@@ -92,25 +92,27 @@ const VitalTrendCard = ({
         </div>
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold mb-1">
-          {latestValue} {unit}
-        </div>
-        <p className="text-xs text-muted-foreground mb-4">
-          Current reading • Normal range: {normalRange}
-        </p>
+        <div className="flex flex-col gap-2 mb-4">
+          <div className="text-2xl font-bold ">
+            {latestValue} {unit}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Current reading • Normal range: {normalRange}
+          </p>
 
-        <p className="text-xs text-muted-foreground mb-2">
-          {new Date(data[0].timestamp).toLocaleDateString("en-US", {
-            dateStyle: "full",
-          })}{" "}
-          -{" "}
-          {new Date(data[data.length - 1].timestamp).toLocaleDateString(
-            "en-US",
-            {
+          <p className="text-xs text-muted-foreground mb-2">
+            {new Date(data[0].timestamp).toLocaleDateString("en-US", {
               dateStyle: "full",
-            },
-          )}
-        </p>
+            })}{" "}
+            -{" "}
+            {new Date(data[data.length - 1].timestamp).toLocaleDateString(
+              "en-US",
+              {
+                dateStyle: "full",
+              },
+            )}
+          </p>
+        </div>
 
         <ChartContainer
           config={{

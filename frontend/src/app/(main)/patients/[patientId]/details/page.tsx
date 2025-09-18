@@ -15,7 +15,7 @@ export default function GraphsPage() {
   const pathname = usePathname();
   const patientId = pathname.split("/")[2];
 
-  const { data: patient, isLoading } = getPatient(patientId);
+  const { data: patient } = getPatient(patientId);
   const { data: currentPatientData } = getPatientReadings(patientId);
 
   const filterByTimeRange = (data: PatientReadings[], range: string) => {
@@ -41,16 +41,24 @@ export default function GraphsPage() {
 
   return (
     <div className="p-6">
-      <div className="flex mb-4 w-full flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+      <div className="mb-4 flex w-full flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h2 className="text-2xl font-bold text-foreground w-full">
-            <SkeletonText loading={isLoading} skeletonClassName="w-full h-8 ">
-              {patient?.name} (Age {patient?.age})
+          <SkeletonText
+            loading={!patient}
+            skeletonClassName="w-full h-8 bg-gray-200"
+          >
+            <h2 className="w-full text-2xl font-bold text-foreground">
+              {patient?.name}
+            </h2>
+          </SkeletonText>
+          <h4 className="w-full text-muted-foreground">
+            <SkeletonText
+              loading={!patient}
+              skeletonClassName="w-full h-6 bg-gray-200"
+            >
+              Age {patient?.age} - Admission Date {patient?.admissionDate}
             </SkeletonText>
-          </h2>
-          <p className="text-muted-foreground">
-            Real-time monitoring and historical trends
-          </p>
+          </h4>
         </div>
         <div className="flex items-center gap-3">
           Timeframe:

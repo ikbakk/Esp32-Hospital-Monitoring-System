@@ -91,7 +91,7 @@ const PatientCard = ({ patient, location }: PatientCardProps) => {
               <Button
                 variant="link"
                 size="sm"
-                className="text-xs -mr-4 hover:cursor-pointer"
+                className="text-xs hover:cursor-pointer"
               >
                 View Details
               </Button>

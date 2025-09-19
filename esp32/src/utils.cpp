@@ -60,6 +60,12 @@ bool testMLX90614() {
 }
 
 bool checkSensorConnections() {
+  if (useMock) {
+    max30100Connected = true;
+    mlx90614Connected = true;
+    return true;
+  }
+
   bool sensorsOK = true;
 
   if (xSemaphoreTake(i2cMutex, pdMS_TO_TICKS(2000)) == pdTRUE) {
@@ -135,4 +141,51 @@ void waitForSensorConnection() {
   Serial.println("\n🎉 All sensors connected and ready!");
   Serial.printf("   MAX30100: ✅ Connected\n");
   Serial.printf("   MLX90614: ✅ Connected\n");
+}
+
+SensorReading generateMockReading(const String &mode = "normal") {
+  SensorReading reading;
+  reading.timestamp = millis();
+  reading.isValid = true;
+
+  if (mode == "normal") {
+    reading.heartRate = random(65, 85);
+    reading.spo2 = random(95, 99);
+    reading.bodyTemp = random(360, 375) / 10.0;
+  } else if (mode == "warning") {
+    reading.heartRate = random(100, 120);
+    reading.spo2 = random(90, 94);
+    reading.bodyTemp = random(378, 390) / 10.0;
+  } else if (mode == "critical") {
+    reading.heartRate = random(30, 50);
+    reading.spo2 = random(75, 85);
+    reading.bodyTemp = random(400, 420) / 10.0;
+  }
+
+  return reading;
+}
+
+void handleSerialCommands() {
+  if (Serial.available()) {
+    String cmd = Serial.readStringUntil('\n');
+    cmd.trim();
+
+    if (cmd.startsWith("mock")) {
+      if (cmd.endsWith("off")) {
+        useMock = false;
+        Serial.println("➡️ Mock mode disabled. Using real sensors.");
+      } else {
+        useMock = true;
+        if (cmd.endsWith("normal"))
+          mockMode = "normal";
+        if (cmd.endsWith("warning"))
+          mockMode = "warning";
+        if (cmd.endsWith("critical"))
+          mockMode = "critical";
+
+        Serial.print("➡️ Mock mode enabled: ");
+        Serial.println(mockMode);
+      }
+    }
+  }
 }

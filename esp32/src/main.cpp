@@ -49,4 +49,6 @@ void loop() {
                   uxQueueMessagesWaiting(sensorQueue));
     lastStatus = millis();
   }
+
+  handleSerialCommands();
 }

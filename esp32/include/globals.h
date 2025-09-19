@@ -22,6 +22,8 @@ extern TaskHandle_t watchdogTaskHandle;
 
 extern PulseOximeter pox;
 extern Adafruit_MLX90614 mlx;
+extern bool useMock;
+extern String mockMode;
 
 // Sensor status tracking
 extern bool max30100Connected;
@@ -54,6 +56,8 @@ void onBeatDetected();
 bool testMAX30100();
 bool testMLX90614();
 bool checkSensorConnections();
+SensorReading generateMockReading(const String &mode);
+void handleSerialCommands();
 
 void waitForSensorConnection();
 SensorReading takeSensorReading();

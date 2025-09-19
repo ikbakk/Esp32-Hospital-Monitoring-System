@@ -51,6 +51,9 @@
 //==============================================================================
 // Sensor Configuration
 //==============================================================================
+
+#define USE_SENSOR_MOCK false;
+
 // MAX30100/MAX30105 Configuration
 #define MAX30100_INT_PIN -1 // -1 if not using interrupt pin
 #define PULSE_AMPLITUDE_RED 0x0A

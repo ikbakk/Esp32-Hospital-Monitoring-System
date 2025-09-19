@@ -8,6 +8,9 @@ float currentSpO2 = 0;
 unsigned long lastBeatDetected = 0;
 long lastBeat = 0;
 
+bool useMock = true;
+String mockMode = "normal";
+
 void setupSensors() {
   Serial.println("Initializing sensors...");
 
@@ -52,6 +55,10 @@ void setupSensors() {
 }
 
 SensorReading takeSensorReading() {
+  if (useMock) {
+    return generateMockReading(mockMode);
+  }
+
   SensorReading reading;
   reading.isValid = false;
   reading.timestamp = millis();

@@ -1,4 +1,4 @@
-import { Plus } from "lucide-react";
+import { Calendar, Plus } from "lucide-react";
 import RecordsPage from "@/components/pages/records";
 import { Button } from "@/components/ui/button";
 import type { PatientRecord } from "@/types/PatientRecord";
@@ -134,18 +134,18 @@ const mockPatientRecords: PatientRecord[] = [
 
 export default function HistoryPage() {
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-foreground">
-            Patient Records
+          <h2 className="flex items-center gap-2 text-2xl font-bold">
+            <Calendar className="h-6 w-6" /> Patient Records
           </h2>
           <p className="text-muted-foreground">
             Comprehensive patient information and medical history
           </p>
         </div>
         <Button>
-          <Plus className="w-4 h-4 mr-2" />
+          <Plus className="mr-2 h-4 w-4" />
           Add New Patient
         </Button>
       </div>

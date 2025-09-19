@@ -1,5 +1,6 @@
 import HomePage from "@/components/pages/home";
 import type { Patient } from "@/types/PatientCard";
+import { LayoutDashboard } from "lucide-react";
 
 const mockPatients: Patient[] = [
   {
@@ -22,9 +23,11 @@ const mockPatients: Patient[] = [
 
 export default function Home() {
   return (
-    <div className="flex-1 space-y-6">
+    <div className="flex-1 w-full space-y-6">
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Patient Monitoring</h2>
+        <h2 className="flex items-center text-2xl font-bold text-foreground">
+          <LayoutDashboard className="mr-2 h-4 w-4" /> Patient Monitoring
+        </h2>
         <p className="text-gray-600">
           Real-time vital signs and patient status
         </p>

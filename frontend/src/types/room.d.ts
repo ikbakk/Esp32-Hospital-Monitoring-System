@@ -10,3 +10,13 @@ export interface BedType {
   bedNumber: string;
   roomNumber: string;
 }
+
+export interface Room {
+  id: string;
+  number: string;
+  status: "occupied" | "available" | "maintenance" | "disabled";
+  patientId?: string;
+  patientName?: string;
+  bedType: "ICU" | "General" | "Emergency";
+  lastCleaned?: string;
+}

@@ -40,7 +40,7 @@ export default function GraphsPage() {
     : currentPatientData;
 
   return (
-    <div className="p-6">
+    <div className="">
       <div className="mb-4 flex w-full flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         <div>
           <SkeletonText

@@ -39,7 +39,6 @@ void setup() {
 }
 
 void loop() {
-  // Main loop can be used for system monitoring or low-priority tasks
   delay(10000);
 
   // Print system status every 10 seconds

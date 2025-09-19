@@ -1,39 +1,54 @@
 #include <globals.h>
 
-// MAX30105 particleSensor;
-// Adafruit_MLX90614 mlx;
+PulseOximeter pox;
+Adafruit_MLX90614 mlx;
 
-const byte RATE_SIZE = 4;
-long rateArray[RATE_SIZE];
+float currentHeartRate = 0;
+float currentSpO2 = 0;
+unsigned long lastBeatDetected = 0;
 long lastBeat = 0;
-int rateIndex = 0;
-long total = 0;
-int beatsPerMinute = 0;
 
 void setupSensors() {
   Serial.println("Initializing sensors...");
 
-  // // Initialize MAX30100
-  // if (!particleSensor.begin()) {
-  //   Serial.println("ERROR: MAX30100 not found!");
-  // } else {
-  //   Serial.println("MAX30100 initialized successfully");
-  //   particleSensor.setup();
-  //   particleSensor.setPulseAmplitudeRed(0x0A);
-  //   particleSensor.setPulseAmplitudeGreen(0);
-  // }
+#ifdef STATUS_LED_PIN
+  pinMode(STATUS_LED_PIN, OUTPUT);
+  digitalWrite(STATUS_LED_PIN, LOW);
+#endif
 
-  // // Initialize MLX90614
-  // if (!mlx.begin()) {
-  //   Serial.println("ERROR: MLX90614 not found!");
-  // } else {
-  //   Serial.println("MLX90614 initialized successfully");
-  // }
-
-  // Initialize heart rate array
-  for (int i = 0; i < RATE_SIZE; i++) {
-    rateArray[i] = 0;
+  Serial.print("Attempting MAX30100 initialization... ");
+  if (pox.begin()) {
+    Serial.println("SUCCESS");
+    pox.setOnBeatDetectedCallback(onBeatDetected);
+    pox.setIRLedCurrent(MAX30100_LED_CURR_7_6MA);
+    max30100Connected = true;
+    max30100ErrorCount = 0;
+  } else {
+    Serial.println("FAILED");
+    max30100Connected = false;
+    max30100ErrorCount = MAX_SENSOR_ERRORS;
   }
+
+  Serial.print("Attempting MLX90614 initialization... ");
+  if (mlx.begin()) {
+    Serial.println("SUCCESS");
+    // Test with a reading
+    double testTemp = mlx.readAmbientTempC();
+    if (testTemp > -40 && testTemp < 85) {
+      mlx90614Connected = true;
+      mlx90614ErrorCount = 0;
+    } else {
+      Serial.println("WARNING: MLX90614 responds but gives invalid readings");
+      mlx90614Connected = false;
+      mlx90614ErrorCount = MAX_SENSOR_ERRORS;
+    }
+  } else {
+    Serial.println("FAILED");
+    mlx90614Connected = false;
+    mlx90614ErrorCount = MAX_SENSOR_ERRORS;
+  }
+
+  waitForSensorConnection();
 }
 
 SensorReading takeSensorReading() {
@@ -41,45 +56,78 @@ SensorReading takeSensorReading() {
   reading.isValid = false;
   reading.timestamp = millis();
 
+  if (!max30100Connected && !mlx90614Connected) {
+    Serial.println("ERROR: No sensors connected");
+    return reading;
+  }
+
   if (xSemaphoreTake(i2cMutex, pdMS_TO_TICKS(1000)) == pdTRUE) {
-    // Read MAX30100 (Heart Rate & SpO2)
-    // long irValue = particleSensor.getIR();
+    if (max30100Connected) {
+      try {
+        pox.update();
+        currentHeartRate = pox.getHeartRate();
+        currentSpO2 = pox.getSpO2();
 
-    if (xSemaphoreTake(i2cMutex, pdMS_TO_TICKS(1000)) == pdTRUE) {
-
-      // === Mock Heart Rate & SpO2 ===
-      bool beatDetected = random(0, 2); // 50% chance to "detect a beat"
-      if (beatDetected) {
-        reading.heartRate = random(60, 100);        // 60–100 BPM
-        reading.spo2 = 96.0 + random(0, 40) / 10.0; // 96.0–100.0%
-      } else {
+        // Validate readings
+        if (currentHeartRate > MIN_HEART_RATE &&
+            currentHeartRate < MAX_HEART_RATE && currentSpO2 > MIN_SPO2 &&
+            currentSpO2 <= MAX_SPO2) {
+          reading.heartRate = currentHeartRate;
+          reading.spo2 = currentSpO2;
+        } else {
+          reading.heartRate = 0;
+          reading.spo2 = 0;
+        }
+      } catch (...) {
+        Serial.println("ERROR: Exception reading MAX30100");
         reading.heartRate = 0;
         reading.spo2 = 0;
+        max30100ErrorCount++;
       }
-
-      // === Mock Body Temperature (MLX90614) ===
-      double temp = random(360, 375) / 10.0; // 36.0–37.5°C
-      if (temp > 30 && temp < 45) {
-        reading.bodyTemp = temp;
-        reading.isValid = true;
-      } else {
-        reading.bodyTemp = 0;
-      }
-
-      // Release the mutex
-      xSemaphoreGive(i2cMutex);
+    } else {
+      reading.heartRate = 0;
+      reading.spo2 = 0;
     }
 
-    // Read MLX90614 (Body Temperature)
-    double temp = random(360, 375) / 10.0; // 36.0–37.5°C
-    if (temp > 30 && temp < 45) {
-      reading.bodyTemp = temp;
-      reading.isValid = true;
+    if (mlx90614Connected) {
+      try {
+        double temp = mlx.readObjectTempC();
+        if (temp > MIN_BODY_TEMP && temp < MAX_BODY_TEMP) {
+          reading.bodyTemp = temp;
+        } else {
+          reading.bodyTemp = 0;
+          // If temperature is completely out of range, sensor might be
+          // disconnected
+          if (temp < -50 || temp > 100) {
+            mlx90614ErrorCount++;
+          }
+        }
+      } catch (...) {
+        Serial.println("ERROR: Exception reading MLX90614");
+        reading.bodyTemp = 0;
+        mlx90614ErrorCount++;
+      }
     } else {
       reading.bodyTemp = 0;
     }
 
+    // Reading is valid if we have at least one valid measurement
+    reading.isValid =
+        (reading.bodyTemp > 0) || (reading.heartRate > 0 && reading.spo2 > 0);
+
     xSemaphoreGive(i2cMutex);
+
+    if (reading.isValid) {
+      Serial.printf(
+          "Sensor readings - HR: %.1f BPM, SpO2: %.1f%%, Temp: %.2f°C\n",
+          reading.heartRate, reading.spo2, reading.bodyTemp);
+    } else {
+      Serial.printf("Invalid readings - HR: %.1f, SpO2: %.1f, Temp: %.2f "
+                    "(MAX30100: %s, MLX90614: %s)\n",
+                    reading.heartRate, reading.spo2, reading.bodyTemp,
+                    max30100Connected ? "OK" : "DISCONNECTED",
+                    mlx90614Connected ? "OK" : "DISCONNECTED");
+    }
   } else {
     Serial.println("ERROR: Failed to acquire I2C mutex");
   }

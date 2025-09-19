@@ -4,33 +4,16 @@ void setupTasks() {
   Serial.println("Creating FreeRTOS tasks...");
 
   // Core 1: Sensor reading task (high priority, real-time)
-  xTaskCreatePinnedToCore(sensorTask,           // Function
-                          "SensorTask",         // Name
-                          4096,                 // Stack size
-                          NULL,                 // Parameter
-                          SENSOR_TASK_PRIORITY, // Priority
-                          &sensorTaskHandle,    // Handle
-                          1                     // Core 1
-  );
+  xTaskCreatePinnedToCore(sensorTask, "SensorTask", 4096, NULL,
+                          SENSOR_TASK_PRIORITY, &sensorTaskHandle, 1);
 
   // Core 0: Network task (lower priority)
-  xTaskCreatePinnedToCore(networkTask,           // Function
-                          "NetworkTask",         // Name
-                          8192,                  // Stack size (larger for HTTP)
-                          NULL,                  // Parameter
-                          NETWORK_TASK_PRIORITY, // Priority
-                          &networkTaskHandle,    // Handle
-                          0                      // Core 0
-  );
+  xTaskCreatePinnedToCore(networkTask, "NetworkTask", 8192, NULL,
+                          NETWORK_TASK_PRIORITY, &networkTaskHandle, 0);
 
   // Watchdog task (can run on either core)
-  xTaskCreate(watchdogTask,           // Function
-              "WatchdogTask",         // Name
-              2048,                   // Stack size
-              NULL,                   // Parameter
-              WATCHDOG_TASK_PRIORITY, // Priority
-              &watchdogTaskHandle     // Handle
-  );
+  xTaskCreate(watchdogTask, "WatchdogTask", 2048, NULL, WATCHDOG_TASK_PRIORITY,
+              &watchdogTaskHandle);
 
   Serial.println("Tasks created successfully!");
 }
@@ -44,16 +27,13 @@ void sensorTask(void *parameter) {
   while (true) {
     vTaskDelayUntil(&xLastWakeTime, xFrequency);
 
-    // Take sensor reading
     SensorReading reading = takeSensorReading();
 
     if (reading.isValid) {
-      // Try to send to queue
       if (xQueueSend(sensorQueue, &reading, pdMS_TO_TICKS(100)) != pdTRUE) {
         Serial.println("WARNING: Sensor queue full, dropping reading");
       }
 
-      // Print reading to serial
       Serial.printf("Reading: HR=%.1f, SpO2=%.1f, Temp=%.2f°C\n",
                     reading.heartRate, reading.spo2, reading.bodyTemp);
     } else {
@@ -76,21 +56,18 @@ void networkTask(void *parameter) {
   while (true) {
     vTaskDelayUntil(&xLastWakeTime, xFrequency);
 
-    // Check WiFi connection
     if (WiFi.status() != WL_CONNECTED) {
       Serial.println("WiFi disconnected, attempting reconnection...");
       setupWiFi();
       continue;
     }
 
-    // Collect readings from queue
     readingCount = 0;
     while (readingCount < 10 &&
            xQueueReceive(sensorQueue, &readings[readingCount], 0) == pdTRUE) {
       readingCount++;
     }
 
-    // Upload if we have data
     if (readingCount > 0) {
       Serial.printf("Uploading %d readings to Supabase...\n", readingCount);
 
@@ -112,24 +89,19 @@ void watchdogTask(void *parameter) {
   Serial.println("Watchdog task started");
 
   while (true) {
-    vTaskDelay(pdMS_TO_TICKS(30000)); // Check every 30 seconds
-
-    // Check if sensor task is running
+    vTaskDelay(pdMS_TO_TICKS(30000));
     if (millis() - lastSensorReading > 10000) {
       Serial.println("ERROR: Sensor task appears stuck!");
     }
 
-    // Check if network task is running
-    if (wifiConnected && millis() - lastUpload > 120000) { // 2 minutes
+    if (wifiConnected && millis() - lastUpload > 120000) {
       Serial.println("WARNING: No uploads in 2 minutes");
     }
 
-    // Check memory
     if (ESP.getFreeHeap() < 10000) {
       Serial.println("WARNING: Low memory!");
     }
 
-    // Check queue size
     int queueItems = uxQueueMessagesWaiting(sensorQueue);
     if (queueItems > MAX_QUEUE_SIZE * 0.8) {
       Serial.printf("WARNING: Queue nearly full (%d items)\n", queueItems);
@@ -138,11 +110,8 @@ void watchdogTask(void *parameter) {
 }
 
 bool uploadToSupabase(const SensorReading *readings, int count) {
-  Serial.println("Uploading to Supabase..." + String(SUPABASE_URL));
-  Serial.println("Uploading to Supabase..." + String(SUPABASE_ANON_KEY));
-
   if (!wifiConnected) {
-    Serial.println("Upload failed: WiFi not connected");
+    Serial.println("Check connections");
     return false;
   }
 

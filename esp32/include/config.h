@@ -34,7 +34,7 @@
 #endif
 
 // Patient Configuration
-#define PATIENT_ID "4d62d0bb-9410-4928-bc1a-492c683852ce"
+#define PATIENT_ID "ef4a5373-d602-4cc0-badb-62ec20cb6ce2"
 
 //==============================================================================
 // Hardware Pin Configuration

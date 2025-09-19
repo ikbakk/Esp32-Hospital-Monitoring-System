@@ -1,298 +1,286 @@
-# 🏥 ESP32 Medical Monitoring System
+# ESP32 Medical Monitoring System
 
-A comprehensive medical monitoring system that simulates patient vital signs and uploads structured medical data to Firebase Firestore, designed to integrate with TypeScript/React frontends.
+A comprehensive medical monitoring system using ESP32 with MAX30100 (heart rate & SpO2) and MLX90614 (body temperature) sensors, integrated with Supabase for real-time data storage and monitoring.
 
-## 📁 Project Structure
+## 🏗️ Architecture
 
-```
-medical-monitor-esp32/
-├── platformio.ini                 # PlatformIO configuration
-├── scripts/
-│   ├── generate_compile_commands.py
-│   └── post_build.py
-├── include/                       # Header files
-│   ├── config.h                   # System configuration
-│   ├── medical_types.h            # Medical data structures
-│   ├── vitals.h                   # Vital signs generation
-│   └── firebase_setup.h           # Firebase operations
-├── src/                          # Implementation files
-│   ├── main.cpp                   # Main application
-│   ├── medical_types.cpp          # Medical types implementation
-│   ├── vitals.cpp                 # Vitals generation logic
-│   └── firebase_setup.cpp         # Firebase implementation
-└── README.md                      # This file
-```
+- **Core 1**: Dedicated to sensor readings (MAX30100 & MLX90614)
+- **Core 0**: Handles network operations and Supabase communication
+- **FreeRTOS**: Task management and inter-core communication
+- **Supabase**: PostgreSQL database with real-time subscriptions
 
-## 🎯 Features
+## 📋 Requirements
 
-### **Medical Data Types**
-- **Patient Records**: Complete patient information matching your TypeScript interfaces
-- **Vital Signs**: Heart rate, SpO2, body temperature with alert detection
-- **Device Management**: Device status, location tracking, maintenance modes
-- **Alert System**: Multi-level alert detection (warning, critical)
-- **Room Status**: Real-time room occupancy and monitoring status
+### Hardware
+- ESP32 Development Board
+- MAX30100 Heart Rate & SpO2 Sensor
+- MLX90614 Infrared Temperature Sensor
+- Breadboard and jumper wires
+- Optional: Status LEDs
 
-### **Firebase Integration**
-- **Structured Data**: Matches your TypeScript interfaces exactly
-- **Real-time Uploads**: Automatic data synchronization
-- **Multiple Collections**: Patients, devices, readings, alerts, rooms
-- **Error Handling**: Robust error detection and reporting
+### Software
+- PlatformIO IDE or CLI
+- Supabase account and project
+- WiFi network
 
-### **Alert System**
-- **Automatic Detection**: Configurable thresholds for all vitals
-- **Multi-level Alerts**: Warning and critical status levels
-- **Alert Persistence**: Tracks alert counts and duration
-- **Real-time Notifications**: Immediate alert uploads to Firestore
+## 🔧 Hardware Setup
 
-## ⚙️ Configuration
+### Pin Connections
 
-### **1. WiFi & Firebase Setup**
-Edit `include/config.h`:
-```cpp
-#define WIFI_SSID "your_wifi_name"
-#define WIFI_PASSWORD "your_wifi_password"
-#define API_KEY "your_firebase_api_key"
-#define USER_EMAIL "your_email@domain.com"
-#define USER_PASSWORD "your_password"
-#define FIREBASE_PROJECT_ID "your_project_id"
-```
+| Component | ESP32 Pin | Notes |
+|-----------|-----------|-------|
+| MAX30100 SDA | GPIO 21 | I2C Data |
+| MAX30100 SCL | GPIO 22 | I2C Clock |
+| MAX30100 VCC | 3.3V | Power |
+| MAX30100 GND | GND | Ground |
+| MLX90614 SDA | GPIO 21 | Shared I2C Data |
+| MLX90614 SCL | GPIO 22 | Shared I2C Clock |
+| MLX90614 VCC | 3.3V | Power |
+| MLX90614 GND | GND | Ground |
+| Status LED | GPIO 2 | Optional |
 
-### **2. Device Configuration**
-```cpp
-#define DEVICE_ID "esp32_monitor_001"
-#define DEFAULT_PATIENT_ID "patient_001"
-#define DEFAULT_ROOM_NUMBER "101"
-#define DEFAULT_BED_NUMBER "A"
-```
+### I2C Addresses
+- MAX30100: 0x57 (default)
+- MLX90614: 0x5A (default)
 
-### **3. Vital Sign Thresholds**
-Customize alert thresholds in `config.h`:
-```cpp
-struct AlertThresholds {
-  struct {
-    float warningLow = 50.0;    // Heart rate warning low
-    float warningHigh = 120.0;  // Heart rate warning high
-    float criticalLow = 40.0;   // Heart rate critical low
-    float criticalHigh = 150.0; // Heart rate critical high
-  } heartRate;
-  // ... SpO2 and temperature thresholds
-};
-```
+## 🚀 Software Setup
 
-## 🚀 Quick Start
+### 1. Clone and Setup Project
 
-### **1. Hardware Setup**
-- ESP32 development board
-- USB cable for programming
-- Optional: Real sensors (can work with simulated data)
-
-### **2. Software Setup**
 ```bash
-# Install PlatformIO
-pip install platformio
+# Create new PlatformIO project
+pio project init --board esp32dev
 
-# Clone/create project
-mkdir medical-monitor-esp32 && cd medical-monitor-esp32
+# Copy the provided files:
+# - src/main.cpp (main ESP32 code)
+# - include/config.h (configuration header)
+# - platformio.ini (PlatformIO configuration)
+```
 
-# Build and upload
+### 2. Configure Environment Variables
+
+Create a `.env` file in your project root:
+
+```env
+WIFI_SSID=your_wifi_network
+WIFI_PASSWORD=your_wifi_password
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your_anon_key_here
+```
+
+Or modify the config.h file directly with your credentials.
+
+### 3. Supabase Setup
+
+1. Create a new Supabase project at [supabase.com](https://supabase.com)
+2. Go to SQL Editor and run the provided schema script
+3. Get your project URL and anon key from Settings > API
+4. Update your configuration with these credentials
+
+### 4. Install Dependencies
+
+PlatformIO will automatically install the required libraries:
+- oxullo MAX30100lib (Heart Rate & SpO2)
+- Adafruit MLX90614 Library (Temperature)
+- ArduinoJson (JSON handling)
+- WiFi libraries (ESP32 built-in)
+
+### 5. Build and Upload
+
+```bash
+# Build the project
+pio run
+
+# Upload to ESP32
 pio run --target upload
 
 # Monitor serial output
 pio device monitor
 ```
 
-### **3. Generate LSP Support**
-```bash
-# Generate compile_commands.json for Neovim/VSCode
-pio run --target compiledb
+## 📊 Database Schema
+
+### Main Tables
+
+#### `patients`
+- Patient demographic and medical information
+- Room/bed assignments
+- Contact information
+
+#### `readings`
+- Real-time sensor data (heart rate, SpO2, body temperature)
+- Device identification
+- Timestamp with timezone
+
+#### `devices`
+- ESP32 device management
+- Status monitoring
+- Firmware tracking
+
+#### `alerts`
+- Automated alerts for critical readings
+- Severity levels (info, warning, critical)
+- Acknowledgment tracking
+
+## 🔄 System Operation
+
+### Sensor Monitoring & Connection Management
+- **Automatic Detection**: Continuously monitors sensor connectivity
+- **Blocking Behavior**: Stops all operations when sensors are disconnected
+- **Auto-Recovery**: Automatically reconnects when sensors come back online
+- **Error Tracking**: Counts consecutive sensor errors before marking as disconnected
+- **Visual Feedback**: Status LED blinks when waiting for sensor connection
+
+### Sensor Reading Task (Core 1)
+- Continuously monitors sensor connectivity
+- **Blocks all operations when sensors are disconnected**
+- Reads MAX30100 every 100ms for optimal accuracy
+- Reads MLX90614 body temperature every 5 seconds
+- Validates readings and queues for upload
+- Automatic reconnection when sensors come back online
+
+### Network Task (Core 0)  
+- Batches sensor readings for efficient upload
+- Manages WiFi connection and reconnection
+- Uploads data to Supabase every 30 seconds
+- Handles HTTP timeouts and retries
+
+### Watchdog Task
+- Monitors system health
+- Checks task responsiveness
+- Monitors memory usage
+- Triggers system restart on critical errors
+
+## 📈 Data Flow
+
+```
+Sensors → Core 1 Task → Queue → Core 0 Task → Supabase → Frontend
 ```
 
-## 📊 Data Structure Examples
+1. **Sensor Reading**: Core 1 continuously reads sensors
+2. **Data Validation**: Filters invalid readings
+3. **Queue Management**: Thread-safe data transfer between cores
+4. **Batch Upload**: Core 0 uploads data in batches
+5. **Real-time Updates**: Supabase provides real-time subscriptions
 
-### **Device Reading Upload**
-```json
-// Firestore path: patients/{patientId}/readings/{readingId}
-{
-  "id": "reading_12345_1693456789",
-  "timestamp": "2025-08-31T10:30:00Z",
-  "deviceId": "esp32_monitor_001",
-  "patientId": "patient_001",
-  "readingSequence": 45,
-  "vitalSigns": {
-    "heartRate": {
-      "value": 78,
-      "alert": {
-        "status": "none",
-        "warningCount": 0,
-        "criticalCount": 0
-      }
-    },
-    "spo2": {
-      "value": 97.5,
-      "alert": {
-        "status": "none",
-        "warningCount": 0,
-        "criticalCount": 0
-      }
-    },
-    "bodyTemp": {
-      "value": 36.8,
-      "alert": {
-        "status": "none",
-        "warningCount": 0,
-        "criticalCount": 0
-      }
-    }
-  },
-  "alertStatus": "none",
-  "measurementType": "continuous_monitoring",
-  "dataQuality": "good"
-}
-```
+## 🚨 Alert System
 
-### **Patient Record Upload**
-```json
-// Firestore path: patients/{patientId}
-{
-  "id": "patient_001",
-  "name": "John Doe",
-  "age": 45,
-  "roomNumber": "101",
-  "bedNumber": "A",
-  "condition": "normal",
-  "contactInfo": {
-    "phone": "+1234567890",
-    "email": "john.doe@email.com",
-    "emergencyContact": "Jane Doe",
-    "emergencyPhone": "+1234567891"
-  },
-  "attendingPhysician": "Dr. Smith",
-  "assignedNurse": "Nurse Johnson",
-  "bloodType": "O+",
-  "assignedDevices": ["esp32_monitor_001"],
-  "monitoringStatus": "active",
-  "createdAt": "2025-08-31T08:00:00Z",
-  "updatedAt": "2025-08-31T10:30:00Z"
-}
-```
+### Critical Thresholds
+- **Heart Rate**: < 50 or > 150 BPM
+- **SpO2**: < 85%
+- **Body Temperature**: < 35°C or > 39°C
 
-### **Alert Upload**
-```json
-// Firestore path: alerts/{alertId}
-{
-  "patientName": "John Doe",
-  "roomNumber": "101",
-  "activeAlerts": {
-    "heartRate": "warning",
-    "spo2": "none",
-    "bodyTemp": "none"
-  },
-  "alertCount": 1,
-  "lastAlertTime": "2025-08-31T10:30:00Z",
-  "severity": "medium"
-}
-```
+### Alert Levels
+- **Info**: Normal status updates
+- **Warning**: Values outside normal range
+- **Critical**: Life-threatening values
 
-## 🔧 Customization
+## 🔧 Configuration
 
-### **Adding New Vital Signs**
-1. **Extend VitalSigns structure** in `medical_types.h`
-2. **Add generation logic** in `vitals.cpp`
-3. **Update Firebase upload** in `firebase_setup.cpp`
-4. **Configure thresholds** in `config.h`
-
-### **Custom Alert Logic**
-Modify `checkVitalAlert()` function in `vitals.cpp`:
+### Timing Settings
 ```cpp
-VitalAlert checkVitalAlert(float value, float warningLow, float warningHigh, 
-                          float criticalLow, float criticalHigh) {
-  // Custom alert logic here
-}
+#define READING_INTERVAL_MS 5000     // 5 seconds
+#define UPLOAD_INTERVAL_MS 30000     // 30 seconds
+#define WATCHDOG_INTERVAL_MS 30000   // 30 seconds
 ```
 
-### **Different Patient Scenarios**
-Enable different simulation modes in `config.h`:
+### Sensor Validation
 ```cpp
-struct SimulationSettings {
-  bool simulateStablePatient = true;
-  bool simulateFeverPatient = false;
-  bool simulateTachycardiaPatient = false;
-  bool simulateHypoxiaPatient = false;
-};
+#define MIN_HEART_RATE 50
+#define MAX_HEART_RATE 200
+#define MIN_SPO2 70
+#define MAX_SPO2 100
+#define MIN_BODY_TEMP 30.0
+#define MAX_BODY_TEMP 45.0
 ```
 
-## 📈 Monitoring & Debug
+## 🐛 Troubleshooting
 
-### **Serial Monitor Output**
-```
-🏥 Medical Monitoring System Starting...
-✅ WiFi connected: 192.168.1.100
-🔥 Initializing Firebase...
-✅ Firebase initialized
+### Common Issues
 
-📊 Generating vital signs reading...
-   💓 Heart Rate: 78 bpm (none)
-   🫁 SpO2: 97.5% (none) 
-   🌡️  Temperature: 36.8°C (none)
-✅ Data stored in Firestore successfully
-```
+**Sensors Not Detected**
+- Check I2C wiring and connections
+- Verify 3.3V power supply
+- System will automatically wait and retry connection
+- Status LED will blink when sensors are disconnected
+- Check serial output for detailed connection status
 
-### **Alert Example**
-```
-📊 Generating vital signs reading...
-   💓 Heart Rate: 125 bpm (warning)
-   🫁 SpO2: 96.2% (none)
-   🌡️  Temperature: 36.9°C (none)
-🚨 ALERT: warning condition detected!
-🚨 Uploading alert: alerts/alert_1693456789
-✅ Data stored in Firestore successfully
-```
+**WiFi Connection Issues**
+- Verify SSID and password
+- Check signal strength
+- Try different WiFi channels
 
-## 🔌 Frontend Integration
+**Upload Failures**
+- Verify Supabase credentials
+- Check internet connectivity
+- Review Supabase logs
 
-Your TypeScript interfaces will receive data in this exact structure. Example frontend usage:
+**Memory Issues**
+- Monitor free heap in serial output
+- Reduce queue size if needed
+- Check for memory leaks
 
-```typescript
-// Subscribe to patient readings
-const unsubscribe = onSnapshot(
-  collection(db, `patients/${patientId}/readings`),
-  (snapshot) => {
-    snapshot.docs.forEach(doc => {
-      const reading: DeviceReading = doc.data();
-      // Process real-time vital signs
-      console.log(`HR: ${reading.vitalSigns.heartRate.value} bpm`);
-    });
-  }
-);
+### Debug Output
 
-// Check for active alerts
-const alertQuery = query(
-  collection(db, 'alerts'),
-  where('alertCount', '>', 0),
-  orderBy('lastAlertTime', 'desc')
-);
+Enable debug flags in config.h:
+```cpp
+#define DEBUG_SENSORS 1
+#define DEBUG_NETWORK 1
+#define DEBUG_MEMORY 1
 ```
 
-## 📝 TODO / Roadmap
+## 📊 Monitoring
 
-- [ ] Add real sensor integration (MAX30102, DS18B20, etc.)
-- [ ] Implement OTA updates
-- [ ] Add local data storage/buffering
-- [ ] Multi-patient support on single device
-- [ ] Bluetooth connectivity options
-- [ ] Advanced alert escalation system
-- [ ] Historical data analysis
-- [ ] Power management optimizations
+### Serial Monitor Output
+```
+=== ESP32 Medical Monitoring System ===
+WiFi connected! IP: 192.168.1.100
+🔍 Checking sensor connections...
+✅ MAX30100 reconnected!
+✅ MLX90614 reconnected!
+🎉 All sensors connected and ready!
+Sensor task started on Core 1
+Network task started on Core 0
+💓 Beat Detected!
+Reading: HR=72.0, SpO2=98.0, Temp=36.50°C
+Uploading 6 readings to Supabase...
+Upload successful!
+
+--- If sensor disconnected ---
+❌ MAX30100 disconnected!
+🚨 SENSOR CONNECTION LOST - Blocking operations!
+⏳ Waiting for sensors to connect...
+   MAX30100: ❌ Disconnected (errors: 3)
+   MLX90614: ✅ Connected (errors: 0)
+```
+
+### System Health Metrics
+- Free heap memory
+- Queue utilization
+- Task responsiveness
+- Network connectivity
+
+## 🔮 Future Enhancements
+
+- [ ] Battery monitoring and low-power modes
+- [ ] Local data storage (SD card backup)
+- [ ] Over-the-air (OTA) firmware updates
+- [ ] Multiple patient support per device
+- [ ] Advanced signal processing for better accuracy
+- [ ] Bluetooth connectivity for mobile apps
+- [ ] Edge AI for predictive analytics
 
 ## 🤝 Contributing
 
-This system is designed to be modular and extensible. Feel free to:
-- Add new vital sign types
-- Implement real sensor drivers
-- Enhance alert algorithms
-- Improve data structures
-- Add new Firebase collections
+1. Fork the repository
+2. Create a feature branch
+3. Test thoroughly with hardware
+4. Submit a pull request
 
 ## 📄 License
 
-This project is designed for educational and development purposes. Ensure compliance with medical device regulations before deployment in clinical environments.
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## ⚠️ Medical Disclaimer
+
+This system is for educational and development purposes only. It should not be used for actual medical diagnosis or treatment without proper medical device certification and regulatory approval.

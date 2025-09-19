@@ -32,6 +32,7 @@ void setup() {
   }
 
   setupWiFi();
+  setupSensors();
   setupTasks();
   configTime(0, 0, "pool.ntp.org", "time.nist.gov");
 

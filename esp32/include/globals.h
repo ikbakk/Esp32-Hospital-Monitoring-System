@@ -10,7 +10,7 @@ struct SensorReading {
 };
 
 struct NetworkData {
-  SensorReading readings[10]; // Batch upload
+  SensorReading readings[10];
   int count;
 };
 
@@ -20,15 +20,23 @@ extern TaskHandle_t sensorTaskHandle;
 extern TaskHandle_t networkTaskHandle;
 extern TaskHandle_t watchdogTaskHandle;
 
-// extern MAX30105 particleSensor;
-// extern Adafruit_MLX90614 mlx;
+extern PulseOximeter pox;
+extern Adafruit_MLX90614 mlx;
 
-// HR calculation variables
-extern const byte RATE_SIZE;
-extern int rateIndex;
+// Sensor status tracking
+extern bool max30100Connected;
+extern bool mlx90614Connected;
+extern unsigned long lastSensorCheck;
+extern unsigned long sensorCheckInterval;
+extern int max30100ErrorCount;
+extern int mlx90614ErrorCount;
+extern const int maxSensorError;
+
+// MAX30100 data
+extern float currentHeartRate;
+extern float currentSpO2;
+extern unsigned long lastBeatDetected;
 extern long lastBeat;
-extern long total;
-extern int beatsPerMinute;
 
 // Network status
 extern bool wifiConnected;
@@ -39,10 +47,18 @@ extern unsigned long lastUpload;
 void setupWiFi();
 void setupSensors();
 void setupTasks();
+
 String getISOTimestamp();
+void printSystemInfo();
+void onBeatDetected();
+bool testMAX30100();
+bool testMLX90614();
+bool checkSensorConnections();
+
+void waitForSensorConnection();
+SensorReading takeSensorReading();
 bool uploadToSupabase(const SensorReading *readings, int count);
+
 void sensorTask(void *parameter);
 void networkTask(void *parameter);
 void watchdogTask(void *parameter);
-SensorReading takeSensorReading();
-void printSystemInfo();

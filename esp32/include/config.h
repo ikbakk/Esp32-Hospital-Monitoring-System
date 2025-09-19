@@ -5,7 +5,7 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <HTTPClient.h>
-#include <MAX30105.h>
+#include <MAX30100_PulseOximeter.h>
 #include <SPI.h>
 #include <WiFi.h>
 #include <Wire.h>

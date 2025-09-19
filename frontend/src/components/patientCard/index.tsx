@@ -77,7 +77,7 @@ const PatientCard = ({ patient, location, isLoading }: PatientCardProps) => {
             loading={isLoading}
             skeletonClassName="h-8 w-24 bg-gray-200"
           >
-            <Link href={`/patient/${patient.id}/details`}>
+            <Link href={`/patients/${patient.id}/details`}>
               <Button
                 variant="link"
                 size="sm"

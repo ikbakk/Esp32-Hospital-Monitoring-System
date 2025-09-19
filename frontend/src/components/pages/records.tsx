@@ -1,98 +1,115 @@
 "use client";
 
-import { Calendar, Clock, MapPin, Search, User } from "lucide-react";
-import Link from "next/link";
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
 import type { PatientRecord } from "@/types/PatientRecord";
-import { Badge } from "../ui/badge";
-import { Button } from "../ui/button";
-import { Card, CardContent } from "../ui/card";
+import { getPatientsList } from "@/hooks/queries/patientQueries";
+import filter from "lodash/filter";
+import orderBy from "lodash/orderBy";
+import RecordSearchBar from "../patientCard/recordSearchBar";
+import RecordFilterComponent from "../recordFilterComponent";
+import RecordResultSummary from "../recordResultSummary";
+import RecordPatientCard from "../recordPatientCard";
 
 interface RecordsPageProps {
   mockPatientRecords: PatientRecord[];
 }
 
-const RecordsPage = ({ mockPatientRecords }: RecordsPageProps) => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedPatient, setSelectedPatient] = useState<PatientRecord | null>(
-    null,
-  );
+type ViewMode = "grid" | "list";
 
-  const filteredPatients = mockPatientRecords.filter(
-    (patient) =>
-      patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      patient.roomNumber.toLowerCase().includes(searchTerm.toLowerCase()),
+export interface RecordPageUIState {
+  searchTerm: string;
+  selectedPatient: PatientRecord | undefined;
+  filterCondition: string;
+  filterRoom: string;
+  sortBy: string;
+  viewMode: ViewMode;
+  showFilters: boolean;
+}
+
+const conditionOrder = { critical: 3, warning: 2, normal: 1 };
+
+const RecordsPage = ({ mockPatientRecords }: RecordsPageProps) => {
+  const [uiState, setUiState] = useState<RecordPageUIState>({
+    searchTerm: "",
+    selectedPatient: undefined,
+    filterCondition: "all",
+    filterRoom: "all",
+    sortBy: "name",
+    viewMode: "list",
+    showFilters: false,
+  });
+
+  const updateState = (patch: Partial<RecordPageUIState>) =>
+    setUiState((prev) => ({ ...prev, ...patch }));
+
+  const { data: patients } = getPatientsList();
+  const filteredPatients = filter(mockPatientRecords, (patient) => {
+    const search = uiState.searchTerm.toLowerCase();
+
+    const matchesSearch =
+      patient.name.toLowerCase().includes(search) ||
+      patient.roomNumber.toLowerCase().includes(search) ||
+      patient.id.includes(uiState.searchTerm) ||
+      patient.attendingPhysician.toLowerCase().includes(search) ||
+      patient.assignedNurse.toLowerCase().includes(search);
+
+    const matchesCondition =
+      uiState.filterCondition === "all" ||
+      patient.condition === uiState.filterCondition;
+
+    const matchesRoom =
+      uiState.filterRoom === "all" ||
+      patient.roomNumber.includes(uiState.filterRoom);
+
+    return matchesSearch && matchesCondition && matchesRoom;
+  });
+
+  const sortedPatients = orderBy(
+    filteredPatients,
+    [
+      (p) => {
+        switch (uiState.sortBy) {
+          case "name":
+            return p.name;
+          case "room":
+            return p.roomNumber;
+          case "admission":
+            return new Date(p.admissionDate).getTime();
+          case "condition":
+            return conditionOrder[p.condition] || 0;
+          default:
+            return p.name;
+        }
+      },
+    ],
+    [
+      uiState.sortBy === "admission" || uiState.sortBy === "condition"
+        ? "desc"
+        : "asc",
+    ],
   );
 
   return (
     <div className="space-y-6">
       {/* Search */}
-      <div className="relative max-w-md">
-        <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-muted-foreground" />
-        <Input
-          placeholder="Search patients or rooms..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10"
+      <div className="flex flex-col gap-4">
+        <RecordSearchBar uiState={uiState} updateState={updateState} />
+        {uiState.showFilters === true && (
+          <RecordFilterComponent uiState={uiState} updateState={updateState} />
+        )}
+        <RecordResultSummary
+          patients={patients ?? []}
+          sortedPatients={sortedPatients}
+          uiState={uiState}
         />
       </div>
 
       {/* Patient List */}
-      <div className="grid gap-4">
-        {filteredPatients.map((patient) => (
-          <Card key={patient.id} className="transition-shadow hover:shadow-md">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="rounded-full bg-blue-100 p-3">
-                    <User className="h-6 w-6 text-blue-600" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold">{patient.name}</h3>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <span className="flex items-center gap-1">
-                        <Calendar className="h-4 w-4" />
-                        Age {patient.age}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <MapPin className="h-4 w-4" />
-                        {patient.roomNumber} - Bed {patient.bedNumber}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Clock className="h-4 w-4" />
-                        Admitted{" "}
-                        {new Date(patient.admissionDate).toLocaleDateString()}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 capitalize">
-                  <Badge
-                    className={
-                      patient.condition === "critical"
-                        ? "bg-red-100 text-red-800"
-                        : patient.condition === "warning"
-                          ? "bg-amber-100 text-amber-800"
-                          : "bg-green-100 text-green-800"
-                    }
-                  >
-                    {patient.condition}
-                  </Badge>
-                  <Link href={`/records/${patient.id}`}>
-                    <Button
-                      className="hover:cursor-pointer"
-                      onClick={() => setSelectedPatient(patient)}
-                    >
-                      View Record
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <RecordPatientCard
+        sortedPatients={sortedPatients}
+        updateState={updateState}
+        viewMode={uiState.viewMode}
+      />
     </div>
   );
 };

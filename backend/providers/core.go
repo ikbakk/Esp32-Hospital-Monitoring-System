@@ -1,13 +1,13 @@
 package providers
 
 import (
-	"github.com/Caknoooo/go-gin-clean-starter/config"
-	authRepo "github.com/Caknoooo/go-gin-clean-starter/modules/auth/repository"
-	userService "github.com/Caknoooo/go-gin-clean-starter/modules/user/service"
-	"github.com/Caknoooo/go-gin-clean-starter/modules/auth/service"
-	"github.com/Caknoooo/go-gin-clean-starter/modules/user/controller"
-	"github.com/Caknoooo/go-gin-clean-starter/modules/user/repository"
-	"github.com/Caknoooo/go-gin-clean-starter/pkg/constants"
+	"ward-monitor-backend/config"
+	authRepo "ward-monitor-backend/modules/auth/repository"
+	userService "ward-monitor-backend/modules/user/service"
+	"ward-monitor-backend/modules/auth/service"
+	"ward-monitor-backend/modules/user/controller"
+	"ward-monitor-backend/modules/user/repository"
+	"ward-monitor-backend/pkg/constants"
 	"github.com/samber/do"
 	"gorm.io/gorm"
 )

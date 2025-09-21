@@ -5,8 +5,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/Caknoooo/go-gin-clean-starter/database"
-	"github.com/Caknoooo/go-gin-clean-starter/pkg/constants"
+	"ward-monitor-backend/database"
+	"ward-monitor-backend/pkg/constants"
 	"github.com/samber/do"
 	"gorm.io/gorm"
 )

@@ -3,12 +3,12 @@ package controller
 import (
 	"net/http"
 
-	authDto "github.com/Caknoooo/go-gin-clean-starter/modules/auth/dto"
-	"github.com/Caknoooo/go-gin-clean-starter/modules/user/dto"
-	"github.com/Caknoooo/go-gin-clean-starter/modules/user/query"
-	"github.com/Caknoooo/go-gin-clean-starter/modules/user/service"
-	"github.com/Caknoooo/go-gin-clean-starter/pkg/constants"
-	"github.com/Caknoooo/go-gin-clean-starter/pkg/utils"
+	authDto "ward-monitor-backend/modules/auth/dto"
+	"ward-monitor-backend/modules/user/dto"
+	"ward-monitor-backend/modules/user/query"
+	"ward-monitor-backend/modules/user/service"
+	"ward-monitor-backend/pkg/constants"
+	"ward-monitor-backend/pkg/utils"
 	"github.com/Caknoooo/go-pagination"
 	"github.com/gin-gonic/gin"
 	"github.com/samber/do"

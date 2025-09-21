@@ -6,7 +6,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/Caknoooo/go-gin-clean-starter/database/entities"
+	"ward-monitor-backend/database/entities"
 	"gorm.io/gorm"
 )
 

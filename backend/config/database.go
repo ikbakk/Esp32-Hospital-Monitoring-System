@@ -1,24 +1,23 @@
 package config
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"os"
 
-	"github.com/Caknoooo/go-gin-clean-starter/pkg/constants"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
+
+	"ward-monitor-backend/pkg/constants"
 )
 
-func RunExtension(db *gorm.DB) {
-	db.Exec("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";")
-}
+var DB *pgxpool.Pool
 
-func SetUpDatabaseConnection() *gorm.DB {
+func SetUpDatabaseConnection() *pgxpool.Pool {
 	if os.Getenv("APP_ENV") != constants.ENUM_RUN_PRODUCTION {
-		err := godotenv.Load(".env")
-		if err != nil {
-			panic(err)
+		if err := godotenv.Load(".env"); err != nil {
+			panic("Error loading .env file")
 		}
 	}
 
@@ -27,28 +26,37 @@ func SetUpDatabaseConnection() *gorm.DB {
 	dbHost := os.Getenv("DB_HOST")
 	dbName := os.Getenv("DB_NAME")
 	dbPort := os.Getenv("DB_PORT")
+	sslMode := os.Getenv("DB_SSLMODE") // Supabase requires: "require"
 
-	dsn := fmt.Sprintf("host=%v user=%v password=%v dbname=%v port=%v", dbHost, dbUser, dbPass, dbName, dbPort)
+	dsn := fmt.Sprintf(
+		"host=%s user=%s password=%s dbname=%s port=%s sslmode=%s",
+		dbHost, dbUser, dbPass, dbName, dbPort, sslMode,
+	)
 
-	db, err := gorm.Open(postgres.New(postgres.Config{
-		DSN:                  dsn,
-		PreferSimpleProtocol: true,
-	}), &gorm.Config{
-		Logger: SetupLogger(),
-	})
+	config, err := pgxpool.ParseConfig(dsn)
 	if err != nil {
-		panic(err)
+		log.Fatalf("❌ Unable to parse DSN: %v\n", err)
 	}
 
-	RunExtension(db)
+	pool, err := pgxpool.NewWithConfig(context.Background(), config)
+	if err != nil {
+		log.Fatalf("❌ Unable to connect to database: %v\n", err)
+	}
 
-	return db
+	DB = pool
+	log.Println("✅ Connected to Supabase Postgres via pgxpool")
+
+	return pool
 }
 
-func CloseDatabaseConnection(db *gorm.DB) {
-	dbSQL, err := db.DB()
-	if err != nil {
-		panic(err)
+func CloseDatabaseConnection() {
+	if DB != nil {
+		DB.Close()
+		log.Println("🔌 Database connection closed")
 	}
-	dbSQL.Close()
+}
+
+func ListenForPatientUpdates() error {
+	// TODO: implement pgx LISTEN/NOTIFY logic here
+	return nil
 }

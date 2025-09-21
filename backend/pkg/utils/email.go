@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"github.com/Caknoooo/go-gin-clean-starter/config"
+	"ward-monitor-backend/config"
 
 	"gopkg.in/gomail.v2"
 )

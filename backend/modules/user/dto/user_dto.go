@@ -4,8 +4,8 @@ import (
 	"errors"
 	"mime/multipart"
 
-	"github.com/Caknoooo/go-gin-clean-starter/database/entities"
-	"github.com/Caknoooo/go-gin-clean-starter/pkg/dto"
+	"ward-monitor-backend/database/entities"
+	"ward-monitor-backend/pkg/dto"
 )
 
 const (

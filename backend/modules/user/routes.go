@@ -1,10 +1,10 @@
 package user
 
 import (
-	"github.com/Caknoooo/go-gin-clean-starter/middlewares"
-	"github.com/Caknoooo/go-gin-clean-starter/modules/auth/service"
-	"github.com/Caknoooo/go-gin-clean-starter/modules/user/controller"
-	"github.com/Caknoooo/go-gin-clean-starter/pkg/constants"
+	"ward-monitor-backend/middlewares"
+	"ward-monitor-backend/modules/auth/service"
+	"ward-monitor-backend/modules/user/controller"
+	"ward-monitor-backend/pkg/constants"
 	"github.com/gin-gonic/gin"
 	"github.com/samber/do"
 )

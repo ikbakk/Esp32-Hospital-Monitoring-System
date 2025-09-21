@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/Caknoooo/go-gin-clean-starter/modules/auth/service"
-	"github.com/Caknoooo/go-gin-clean-starter/modules/user/dto"
-	"github.com/Caknoooo/go-gin-clean-starter/pkg/utils"
+	"ward-monitor-backend/modules/auth/service"
+	"ward-monitor-backend/modules/user/dto"
+	"ward-monitor-backend/pkg/utils"
 	"github.com/gin-gonic/gin"
 )
 

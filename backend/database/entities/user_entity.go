@@ -1,7 +1,7 @@
 package entities
 
 import (
-	"github.com/Caknoooo/go-gin-clean-starter/pkg/helpers"
+	"ward-monitor-backend/pkg/helpers"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )

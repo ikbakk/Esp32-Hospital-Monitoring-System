@@ -79,13 +79,13 @@ const RecordsPage = ({ mockPatientRecords }: RecordsPageProps) => {
           <RecordFilterComponent uiState={uiState} updateState={updateState} />
         )}
         <RecordResultSummary
-          patients={[]}
+          patients={searchResult ?? []}
           sortedPatients={patients ?? []}
           uiState={uiState}
         />
       </div>
       <RecordPatientCard
-        sortedPatients={[]}
+        sortedPatients={searchResult ? searchResult : patients ? patients : []}
         updateState={updateState}
         viewMode={uiState.viewMode}
       />

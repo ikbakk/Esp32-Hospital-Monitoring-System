@@ -9,35 +9,38 @@ import {
   CardFooter,
   CardHeader,
 } from "@/components/ui/card";
-import type { PatientInfo as Patient } from "@/types/patient";
 import PatientCardContent from "./patientCardContent";
 import PatientInfo from "./patientInfo";
-import { getPatientReadings } from "@/hooks/queries/patientQueries";
 import { getConditionColor } from "./cardUtils";
 import PatientCardHeader from "./cardHeader";
 import last from "lodash/last";
 import SkeletonText from "../ui/skeleton-text";
+import { PatientTable } from "@/types/supabase";
+import { getReadings } from "@/hooks/queries/readings";
 
 interface PatientCardProps {
-  location: {
-    roomId: string;
-    bedId: string;
-  };
-  patient: Patient;
+  patient: PatientTable;
   isLoading: boolean;
 }
 
-const PatientCard = ({ patient, location, isLoading }: PatientCardProps) => {
-  const { data: readings } = getPatientReadings(patient.id);
+const PatientCard = ({ patient, isLoading }: PatientCardProps) => {
+  const { data: readings } = getReadings(patient.id);
   const latestReadings = last(readings);
+  const date = latestReadings?.timestamp
+    ? new Date(latestReadings.timestamp).toLocaleDateString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      })
+    : null; // or undefined, or a fallback date
 
   return (
     <Card className="max-w w-full-sm border border-gray-800">
       <CardHeader className={`${getConditionColor("normal")} p-4 text-white`}>
         <PatientCardHeader
           isLoading={isLoading}
-          roomName={location.roomId}
-          bedName={location.roomId}
+          roomName={patient.room_location || ""}
+          bedName={patient.bed_number || ""}
           patientCondition={"normal"}
         />
       </CardHeader>
@@ -48,12 +51,12 @@ const PatientCard = ({ patient, location, isLoading }: PatientCardProps) => {
           isLoading={isLoading}
           name={patient.name}
           age={patient.age}
-          admissionDate={patient.admissionDate}
+          admissionDate={patient.admission_date || ""}
         />
 
         {/* Vital Signs */}
         <PatientCardContent
-          isLoading={!readings}
+          isLoading={isLoading}
           latestReading={latestReadings}
           // abnormalities={getAbnormalities("")}
         />
@@ -63,15 +66,13 @@ const PatientCard = ({ patient, location, isLoading }: PatientCardProps) => {
       <CardFooter className="px-4 pb-4">
         <div className="flex w-full items-center justify-between rounded bg-gray-50 p-2 text-xs text-gray-500">
           <SkeletonText
-            loading={!readings}
-            className="w-full flex items-center gap-1"
+            loading={false}
+            className="flex w-full items-center gap-1"
             skeletonClassName="w-[65%] h-8 bg-gray-200"
           >
             <Clock className="h-4 w-4" />
             Last updated: <br />
-            {latestReadings
-              ? new Date(latestReadings.timestamp).toLocaleString()
-              : ""}
+            {date}
           </SkeletonText>
           <SkeletonText
             loading={isLoading}

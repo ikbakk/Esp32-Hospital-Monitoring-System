@@ -7,10 +7,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { TimeRange } from "@/hooks/useRealtimeReadingsByTimeRange";
 
 interface TimeRangeSelectorProps {
   value: string;
-  onChange: (value: string) => void;
+  onChange: (value: TimeRange) => void;
 }
 
 const TimeRangeSelector = ({ value, onChange }: TimeRangeSelectorProps) => {

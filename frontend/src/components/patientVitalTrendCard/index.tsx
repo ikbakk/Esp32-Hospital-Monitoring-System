@@ -16,16 +16,16 @@ import {
 } from "@/components/ui/chart";
 import { Badge } from "../ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { PatientReadings } from "@/types/patient";
 import get from "lodash/get";
 import last from "lodash/last";
 import nth from "lodash/nth";
+import { ReadingsTable } from "@/types/supabase";
 
 interface VitalTrendCardProps {
   title: string;
   icon: React.ReactNode;
-  data: PatientReadings[];
-  dataKey: keyof PatientReadings; // "heartRate" | "spo2" | "bodyTemp"
+  data: ReadingsTable[];
+  dataKey: keyof ReadingsTable; // "heartRate" | "spo2" | "bodyTemp"
   color: string;
   unit: string;
   normalRange: string;
@@ -43,7 +43,7 @@ const VitalTrendCard = ({
   paddingPercent = 0.15,
 }: VitalTrendCardProps) => {
   const transformedData = data.map((reading) => {
-    const timestamp = new Date(reading.timestamp);
+    const timestamp = new Date(reading.timestamp!);
     return {
       timelabel: timestamp.toLocaleTimeString([], {
         hour: "2-digit",
@@ -101,11 +101,11 @@ const VitalTrendCard = ({
           </p>
 
           <p className="text-xs text-muted-foreground mb-2">
-            {new Date(data[0].timestamp).toLocaleDateString("en-US", {
+            {new Date(data[0].timestamp!).toLocaleDateString("en-US", {
               dateStyle: "full",
             })}{" "}
             -{" "}
-            {new Date(data[data.length - 1].timestamp).toLocaleDateString(
+            {new Date(data[data.length - 1].timestamp!).toLocaleDateString(
               "en-US",
               {
                 dateStyle: "full",

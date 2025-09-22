@@ -1,10 +1,10 @@
 "use client";
 
 import PatientCard from "@/components/patientCard";
-import { getPatientsList } from "@/hooks/queries/patientQueries";
+import { getPatients } from "@/hooks/queries/patients";
 
 export default function HomePage() {
-  const { data: patients, isLoading } = getPatientsList();
+  const { data: patients, isLoading } = getPatients();
 
   return (
     <>
@@ -15,7 +15,6 @@ export default function HomePage() {
                 key={patient.id}
                 patient={patient}
                 isLoading={isLoading}
-                location={{ roomId: "room_101", bedId: "bed_a" }}
               />
             ))
           : null}

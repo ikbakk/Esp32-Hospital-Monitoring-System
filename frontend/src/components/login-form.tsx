@@ -14,9 +14,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
-import { isFirebaseAuthenticated } from "@/lib/firebaseAuth";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { loginAction } from "@/app/(auth)/actions";
 
 interface FormInputs {
   email: string;
@@ -44,12 +44,15 @@ export function LoginForm({
 
   const onSubmit = async (data: FormInputs) => {
     try {
-      const isAuthenticated = await isFirebaseAuthenticated(data);
-      if (isAuthenticated) {
-        router.push("/");
-      }
+      const formData = new FormData();
+      formData.append("email", data.email);
+      formData.append("password", data.password);
 
-      throw new Error("Invalid email or password");
+      const result = await loginAction(formData);
+
+      if (result?.success === false) {
+        throw new Error("Invalid email or password");
+      }
     } catch (error) {
       const e = error as Error;
       setError(e.message);

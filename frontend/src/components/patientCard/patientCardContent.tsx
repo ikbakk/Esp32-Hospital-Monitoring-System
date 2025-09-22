@@ -2,9 +2,10 @@ import { Activity, Heart, Thermometer } from "lucide-react";
 import type { getAbnormalities } from "./cardUtils";
 import { PatientReadings } from "@/types/patient";
 import SkeletonText from "../ui/skeleton-text";
+import { ReadingsTable } from "@/types/supabase";
 
 interface PatientCardcontentProps {
-  latestReading: PatientReadings | undefined;
+  latestReading: ReadingsTable | undefined;
   isLoading: boolean;
 }
 
@@ -18,7 +19,7 @@ const PatientCardContent = ({
         icon={<Heart className="h-4 w-4" />}
         label="Heart Rate"
         isLoading={isLoading}
-        value={latestReading ? latestReading.heartRate : ""}
+        value={latestReading ? latestReading.heart_rate : 0}
         unit="bpm"
       />
 
@@ -26,7 +27,7 @@ const PatientCardContent = ({
         icon={<Activity className="h-4 w-4" />}
         label="Oxygen Sat"
         isLoading={isLoading}
-        value={latestReading ? latestReading.spo2 : ""}
+        value={latestReading ? latestReading.spo2 : 0}
         unit="%"
       />
 
@@ -34,7 +35,7 @@ const PatientCardContent = ({
         icon={<Thermometer className="h-4 w-4" />}
         label="Temperature"
         isLoading={isLoading}
-        value={latestReading ? latestReading.bodyTemp : ""}
+        value={latestReading ? latestReading.body_temp : 0}
         unit="°C"
       />
     </div>
@@ -51,7 +52,7 @@ const VitalSignCard = ({
 }: {
   icon: React.ReactNode;
   label: string;
-  value: string | number;
+  value: number | null;
   unit: string;
   isAbnormal?: boolean;
   isLoading: boolean;

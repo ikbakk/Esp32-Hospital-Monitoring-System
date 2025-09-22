@@ -2,10 +2,10 @@
 
 import { Activity, Heart, Thermometer } from "lucide-react";
 import VitalTrendCard from "../patientVitalTrendCard";
-import { PatientReadings } from "@/types/patient";
+import { ReadingsTable } from "@/types/supabase";
 
 interface PatientVitalTrendsProps {
-  currentPatientData: PatientReadings[];
+  currentPatientData: ReadingsTable[];
 }
 
 const PatientVitalTrends = ({
@@ -17,7 +17,7 @@ const PatientVitalTrends = ({
         title="Heart Rate"
         icon={<Heart className="h-4 w-4 text-red-500" />}
         data={currentPatientData}
-        dataKey="heartRate"
+        dataKey="heart_rate"
         color="var(--color-red-500)"
         unit="bpm"
         normalRange="60-100 bpm"
@@ -37,7 +37,7 @@ const PatientVitalTrends = ({
         title="Body Temperature"
         icon={<Thermometer className="h-4 w-4 text-orange-500" />}
         data={currentPatientData}
-        dataKey="bodyTemp"
+        dataKey="body_temp"
         color="var(--color-orange-500)"
         unit="°C"
         normalRange="36.0-37.5°C"

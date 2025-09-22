@@ -3,6 +3,7 @@ import {
   useFirestoreCollection,
   useFirestoreDocument,
   useOrderedReadings,
+  useStaticFirestoreCollection,
   useStaticFirestoreDocument,
 } from "../useFirestoreQuery";
 import { db } from "@/lib/firebase";
@@ -19,7 +20,7 @@ const readingsConverter: FirestoreDataConverter<PatientReadings> = {
 };
 
 export function getPatientsList() {
-  return useFirestoreCollection<PatientInfo>(
+  return useStaticFirestoreCollection<PatientInfo>(
     ["patients"],
     collection(db, "patients").withConverter(patientConverter),
   );
@@ -33,7 +34,7 @@ export function getPatient(patientId: string) {
 }
 
 export function getPatientReadings(patientId: string) {
-  return useFirestoreCollection<PatientReadings>(
+  return useStaticFirestoreCollection<PatientReadings>(
     [patientId, "readings"],
     collection(db, "patients", patientId, "readings").withConverter(
       readingsConverter,

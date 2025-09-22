@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import type { PatientRecord } from "@/types/PatientRecord";
 import { getPatientsList } from "@/hooks/queries/patientQueries";
 import filter from "lodash/filter";
@@ -9,6 +9,12 @@ import RecordSearchBar from "../patientCard/recordSearchBar";
 import RecordFilterComponent from "../recordFilterComponent";
 import RecordResultSummary from "../recordResultSummary";
 import RecordPatientCard from "../recordPatientCard";
+import {
+  getFilteredPatients,
+  getPatients,
+  getSearchedPatients,
+} from "@/hooks/queries/patients";
+import { PatientTable } from "@/types/supabase";
 
 interface RecordsPageProps {
   mockPatientRecords: PatientRecord[];
@@ -42,71 +48,44 @@ const RecordsPage = ({ mockPatientRecords }: RecordsPageProps) => {
   const updateState = (patch: Partial<RecordPageUIState>) =>
     setUiState((prev) => ({ ...prev, ...patch }));
 
-  const { data: patients } = getPatientsList();
-  const filteredPatients = filter(mockPatientRecords, (patient) => {
-    const search = uiState.searchTerm.toLowerCase();
-
-    const matchesSearch =
-      patient.name.toLowerCase().includes(search) ||
-      patient.roomNumber.toLowerCase().includes(search) ||
-      patient.id.includes(uiState.searchTerm) ||
-      patient.attendingPhysician.toLowerCase().includes(search) ||
-      patient.assignedNurse.toLowerCase().includes(search);
-
-    const matchesCondition =
-      uiState.filterCondition === "all" ||
-      patient.condition === uiState.filterCondition;
-
-    const matchesRoom =
-      uiState.filterRoom === "all" ||
-      patient.roomNumber.includes(uiState.filterRoom);
-
-    return matchesSearch && matchesCondition && matchesRoom;
+  const { data: searchResult, refetch: refetchSearch } = getSearchedPatients(
+    uiState.searchTerm,
+  );
+  const { data: patients, refetch: refetchFilter } = getFilteredPatients({
+    filterCondition: uiState.filterCondition,
+    filterRoom: uiState.filterRoom,
+    sortBy: uiState.sortBy,
   });
 
-  const sortedPatients = orderBy(
-    filteredPatients,
-    [
-      (p) => {
-        switch (uiState.sortBy) {
-          case "name":
-            return p.name;
-          case "room":
-            return p.roomNumber;
-          case "admission":
-            return new Date(p.admissionDate).getTime();
-          case "condition":
-            return conditionOrder[p.condition] || 0;
-          default:
-            return p.name;
-        }
-      },
-    ],
-    [
-      uiState.sortBy === "admission" || uiState.sortBy === "condition"
-        ? "desc"
-        : "asc",
-    ],
-  );
+  const handleSearch = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    refetchSearch();
+  };
+
+  const handleFilter = () => {
+    refetchFilter();
+  };
 
   return (
     <div className="space-y-6">
       {/* Search */}
       <div className="flex flex-col gap-4">
-        <RecordSearchBar uiState={uiState} updateState={updateState} />
-        {uiState.showFilters === true && (
+        <RecordSearchBar
+          uiState={uiState}
+          updateState={updateState}
+          onSubmit={handleSearch}
+        />
+        {uiState.showFilters && (
           <RecordFilterComponent uiState={uiState} updateState={updateState} />
         )}
         <RecordResultSummary
-          patients={patients ?? []}
-          sortedPatients={sortedPatients}
+          patients={[]}
+          sortedPatients={patients ?? []}
           uiState={uiState}
         />
       </div>
-
-      {/* Patient List */}
       <RecordPatientCard
-        sortedPatients={sortedPatients}
+        sortedPatients={[]}
         updateState={updateState}
         viewMode={uiState.viewMode}
       />
